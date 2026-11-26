@@ -359,6 +359,9 @@ main.anim .hs{animation:slidein .5s cubic-bezier(.2,.7,.2,1) both;animation-dela
 .lds span{display:inline-flex;align-items:center;gap:7px;transition:color .3s}.lds i{width:7px;height:7px;border-radius:50%;background:var(--line2);transition:all .3s}
 .lds span.on{color:var(--ink)}.lds span.on i{background:#9AA6FF;box-shadow:0 0 0 4px rgba(154,166,255,.18);animation:pulse 1.2s ease-in-out infinite}
 .lds span.done{color:var(--mut)}.lds span.done i{background:#52E0A6}
+.ldn{display:flex;align-items:flex-start;gap:9px;margin-top:4px;padding:11px 14px;border-radius:12px;font-size:13px;line-height:1.55;text-align:left;color:var(--ink);border:1px solid rgba(99,232,176,.28);background:rgba(99,232,176,.08);animation:rise .4s cubic-bezier(.2,.7,.2,1) both}
+.ldn svg{flex:none;margin-top:2px}.ldn.warn{border-color:rgba(244,196,90,.32);background:rgba(244,196,90,.08)}.ldn.bad{border-color:rgba(255,143,115,.35);background:rgba(255,143,115,.09)}
+.ld.err .ldr{animation-play-state:paused;opacity:.35}
 @media (prefers-reduced-motion:reduce){.ldr,.ldc,.ldp{animation:none!important}}
 @media (max-width:1100px){.slots{grid-template-columns:repeat(2,minmax(0,1fr))}.row,.ins{grid-template-columns:minmax(0,1fr)}}
 @media (max-width:900px){.app{flex-direction:column}.side{width:auto;height:auto;position:static;flex-direction:row;flex-wrap:wrap;align-items:center;padding:12px;border-right:0;border-bottom:1px solid var(--line)}.brand{padding:4px 8px;width:100%}.sect,.nav .badge{display:none}.shop{margin:6px 0 0;width:100%;padding:0;border:0;background:none}.shop .bar,.shop span,.shop b{display:none}.swb{margin-top:0;width:auto}.nav{padding:8px 10px}.nav.on:before{display:none}.grid4{grid-template-columns:repeat(2,minmax(0,1fr))}.wf .t{height:180px}.wf .x{font-size:10px}.chk{grid-template-columns:auto minmax(0,1fr)}.chk .meter,.chk .num{grid-column:2}}
@@ -1017,8 +1020,8 @@ function delDialog(id){const L=t(),s=Saves.list.find(x=>x.id===id);if(!s)return;
   modal(`<div class="ico" style="background:var(--negbg);width:40px;height:40px;border-radius:12px;margin-bottom:14px">${ic('trash',20,'#FF9B82',2)}</div><h2 style="font-size:19px">${esc(L.delT)}</h2><p class="mut" style="font-size:14px;margin:8px 0 0">${esc(L.delSub(s.name))}</p><div style="display:flex;gap:10px;justify-content:flex-end;margin-top:22px"><button type="button" class="btn" data-act="mclose">${esc(L.cancel)}</button><button type="button" class="btn danger" data-dodel="${esc(id)}">${esc(L.del)}</button></div>`)}
 
 /* ---------- re-import a Lumen Excel export ---------- */
-Object.assign(X.zh,{impOk:n=>`已读取 Lumen 导出文件「${n}」`,impOld:'这是旧版导出文件，金额按导出时的数字还原（广告报告的总花费等细节不会显示）',impBad:'这个 Lumen 文件读不出来，请重新导出一次'});
-Object.assign(X.en,{impOk:n=>`Loaded Lumen export “${n}”`,impOld:'Older export — amounts are restored from the exported figures (ad report spend details are not shown)',impBad:'This Lumen file could not be read — please export it again'});
+Object.assign(X.zh,{impT:'正在打开 Lumen 导出文件',impSteps:['读取文件','还原数据','计算利润'],impOk:'已还原报表数据和你填写的成本',impOld:'旧版导出文件：金额按导出时的数字还原，广告报告的总花费不会显示',impBad:'这个 Lumen 文件读不出来，请重新导出一次'});
+Object.assign(X.en,{impT:'Opening Lumen export',impSteps:['Reading file','Restoring data','Computing profit'],impOk:'Report data and your entered costs restored',impOld:'Older export: amounts are restored from the exported figures; ad report spend is not shown',impBad:'This Lumen file could not be read — please export it again'});
 const LUMEN_DH=[['订单号','完成时间','大SKU','小SKU','产品名','规格','售价 Q','数量 R','金额 Q×R','AN 分摊','AO 分摊','AP 分摊','AI 联盟佣金','广告费 U','净利','单位成本','成本合计','扣成本后净利'],['Order ID','Completed','Parent','Variation','Product','Variation name','Q','R','Q×R','AN','AO','AP','AI','U','Net','Unit cost','Cost','True profit']];
 function lumenImport(wb,fname){
   const ws=wb.Sheets['_lumen'];
@@ -1046,11 +1049,14 @@ function lumenImport(wb,fname){
   const src={orders};if(conv.length)src.conv=conv;if(ads.length)src.ads=ads;if(cost.length)src.cost=cost;
   const files={orders:{name:fname,n:orders.length}};if(conv.length)files.conv={name:fname,n:conv.length};if(ads.length)files.ads={name:fname,n:ads.length};if(cost.length||Object.keys(over).length)files.cost={name:fname,n:cost.length};
   return {src,files,over,name:'',old:true}}
-async function restoreLumen(r,fname){const L=t();
-  if(r.bad){hideLoader();toast(L.impBad,false);return}
+function ldTitle(x,steps){if(!LD.el)return;LD.el.querySelector('.ldt').textContent=x;if(steps){LD.steps=steps;const l=LD.el.querySelector('.lds');if(l)l.innerHTML=steps.map((st,i)=>`<span data-s="${i}"><i></i>${esc(st)}</span>`).join('')}}
+function ldNote(x,kind){if(!LD.el)return;let n=LD.el.querySelector('.ldn');if(!n){n=document.createElement('div');LD.el.querySelector('.ldb').appendChild(n)}
+  n.className='ldn '+(kind||'ok');n.innerHTML=(kind==='warn'||kind==='bad'?ic('alert',15,kind==='bad'?'#FF9B82':'#F4C45A',2.2):ic('check',15,'#63E8B0',2.4))+'<span></span>';n.querySelector('span').textContent=x}
+async function restoreLumen(r,fname){const L=t();ldTitle(L.impT,L.impSteps);ldStep(0,40);await tick();
+  if(r.bad){LD.el&&LD.el.classList.add('err');ldNote(L.impBad,'bad');await new Promise(z=>setTimeout(z,2600));hideLoader();return}
   S.src=r.src;S.files=r.files;S.over=Object.assign({},r.over);store.set('costs',S.over);S.setId=null;S.open={};S.q='';
-  ldStep(1,70);await tick();recompute();ldStep(2,90);await finishLoader(1100);S.last='';
-  if(location.hash!=='#overview')location.hash='overview';else render();toast(r.old?L.impOld:L.impOk(fname),!r.old)}
+  ldStep(1,65);await tick();recompute();ldStep(2,88);ldNote(r.old?L.impOld:L.impOk,r.old?'warn':'ok');await finishLoader(r.old?2800:1700);S.last='';
+  if(location.hash!=='#overview')location.hash='overview';else render()}
 
 async function exportX(){const L=t(),R=S.res;if(!R)return;
   const H=lang==='zh'?['大SKU','小SKU','产品名','均价 Q','销量 R','营业额 Q×R','AN 手续费','AO 佣金','AP 服务费','AI 联盟佣金','广告费 U','总扣费','净利','单位成本','成本合计','扣成本后净利','利润率']:['Parent SKU','Variation','Product','Avg Q','Units R','Revenue Q×R','AN','AO','AP','AI','Ads U','Deductions','Net','Unit cost','Cost','True profit','Margin'];
