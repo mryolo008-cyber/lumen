@@ -739,7 +739,7 @@ function top(title,extra){const L=t(),p=period();
   return `<div><h1>${esc(title)}</h1>${p?`<div class="period"><i></i><span class="num">${esc(p)}</span></div>`:`<div class="period" style="color:var(--dim)">${esc(L.noFiles)}</div>`}</div><div class="tools">${extra||''}</div>`}
 const langBtn=()=>`<button type="button" class="lb" data-lang="${lang==='zh'?'en':'zh'}" aria-label="${lang==='zh'?'Switch to English':'切换到中文'}" title="${lang==='zh'?'English':'中文'}">${ic('globe',15)}<span>${lang==='zh'?'EN':'中文'}</span></button>`;
 const saveBtn=()=>`<button type="button" class="btn" data-act="save">${ic('save',16)}${esc(t().save)}</button>`;
-const expBtn=()=>`<button type="button" class="btn" data-act="export">${ic('dl',16)}${esc(t().export)}</button>`;
+const expBtn=()=>`<button type="button" class="btn" data-act="expcost">${ic('costs',16)}${esc(t().expCost)}</button><button type="button" class="btn" data-act="export">${ic('dl',16)}${esc(t().export)}</button>`;
 function empty(){const L=t();return `<div class="card empty"><div class="upi">${ic('upload',26,'#B9C3FF')}</div><h2 style="font:600 22px 'Geist','Noto Sans SC'">${esc(L.noData)}</h2><p style="max-width:420px;margin:10px auto 22px">${esc(L.noDataSub)}</p><a class="btn pri" href="#upload">${esc(L.goUpload)}</a></div>`}
 function spark(vals,color,id){if(vals.length<2)return'';const W=200,H=38,mx=Math.max(...vals),mn=Math.min(0,...vals),sp=(mx-mn)||1;
   const pts=vals.map((v,i)=>[i/(vals.length-1)*W,H-2-(v-mn)/sp*(H-6)]);const d=pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
@@ -1066,6 +1066,28 @@ async function restoreLumen(r,fname){const L=t();ldTitle(L.impT,L.impSteps);ldSt
   ldStep(1,65);await tick();recompute();ldStep(2,88);ldNote(r.old?L.impOld:L.impOk,r.old?'warn':'ok');await finishLoader(r.old?2800:1700);S.last='';
   if(location.hash!=='#overview')location.hash='overview';else render()}
 
+/* ---------- export unit costs in ITEM_COST format ---------- */
+Object.assign(X.zh,{export:'导出营销报告',expCost:'导出成本价',expCostOk:'成本价已导出',cxH:['Item','Description','Group','Ref. Cost','状态'],cxOrig:'成本表',cxMan:'手动填写',cxMiss:'待补成本'});
+Object.assign(X.en,{export:'Export marketing report',expCost:'Export costs',expCostOk:'Costs exported',cxH:['Item','Description','Group','Ref. Cost','Status'],cxOrig:'Cost table',cxMan:'Entered by you',cxMiss:'Missing cost'});
+async function saveBlob(out,name,okMsg){const L=t();
+  if(typeof dl!=='undefined'&&dl){try{await dl.save({filename:name,data:new Blob([out])});toast(okMsg)}catch(e){toast(e&&e.code==='declined'?L.expDecl:L.expNo,false)}return}
+  try{const u=URL.createObjectURL(new Blob([out],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));const x=document.createElement('a');x.href=u;x.download=name;document.body.appendChild(x);x.click();x.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);toast(okMsg)}catch(e){toast(L.expNo,false)}}
+async function exportCost(){const L=t(),R=S.res;if(!R)return;const K=LumenEngine.skuKey;
+  const rows=[],byKey={};
+  (S.src.cost||[]).forEach(r=>{const it=String(r['Item']==null?'':r['Item']).trim();if(!it)return;const raw=r['Ref. Cost']!==undefined?r['Ref. Cost']:(r.__row?r.__row[3]:'');
+    const row=[it,r['Description']==null?'':String(r['Description']),r['Group']==null?'':String(r['Group']),raw===''||raw==null?'':LumenEngine.num(raw),L.cxOrig];
+    if(!(K(it) in byKey)){byKey[K(it)]=row;rows.push(row)}});
+  const add=[],miss=[];
+  R.skus.slice().sort((a,b)=>a.sku.localeCompare(b.sku)).forEach(s=>{const k=K(s.sku);
+    if(s.csrc==='manual'){if(byKey[k]){byKey[k][3]=s.uc;byKey[k][4]=L.cxMan}else{const r=[s.sku,s.pname||'','',s.uc,L.cxMan];byKey[k]=r;add.push(r)}}
+    else if(s.csrc==='none'&&!byKey[k]){const r=[s.sku,s.pname||'','','',L.cxMiss];byKey[k]=r;miss.push(r)}});
+  const all=[L.cxH].concat(rows,add,miss);
+  const ws=XLSX.utils.aoa_to_sheet(all);ws['!cols']=[{wch:28},{wch:60},{wch:10},{wch:11},{wch:12}];ws['!autofilter']={ref:'A1:E'+all.length};
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'ITEM_COST');
+  const out=XLSX.write(wb,{bookType:'xlsx',type:'array'});
+  const p=R.daily.length?R.daily[0].day+'_'+R.daily[R.daily.length-1].day:'';
+  await saveBlob(out,'ITEM_COST_Lumen'+(p?'_'+p:'')+'.xlsx',L.expCostOk)}
+
 async function exportX(){const L=t(),R=S.res;if(!R)return;
   const H=lang==='zh'?['大SKU','小SKU','产品名','均价 Q','销量 R','营业额 Q×R','AN 手续费','AO 佣金','AP 服务费','AI 联盟佣金','广告费 U','总扣费','净利','单位成本','成本合计','扣成本后净利','利润率']:['Parent SKU','Variation','Product','Avg Q','Units R','Revenue Q×R','AN','AO','AP','AI','Ads U','Deductions','Net','Unit cost','Cost','True profit','Margin'];
   const r2=n=>(typeof n==='number'&&isFinite(n))?Math.round(n*100)/100:'';
@@ -1110,6 +1132,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-goflt],[da
   if(b.dataset.lang){lang=b.dataset.lang;store.set('lang',lang);render()}
   else if(b.dataset.act==='pick')$('#file').click();
   else if(b.dataset.act==='export')exportX();
+  else if(b.dataset.act==='expcost')exportCost();
   else if(b.dataset.tog){S.open[b.dataset.tog]=!S.open[b.dataset.tog];S.fresh=S.open[b.dataset.tog]?b.dataset.tog:'';render();S.fresh=''}
   else if(b.dataset.filter){S.filter=b.dataset.filter;render()}
   else if(b.dataset.ins){S.ins=b.dataset.ins;render()}
