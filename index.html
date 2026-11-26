@@ -700,6 +700,7 @@ function recompute(){if(!S.src.orders){S.res=null;return}S.res=LumenEngine.compu
 async function readFile(f){
   const buf=await f.arrayBuffer();let wb;
   if(/\.csv$/i.test(f.name)){wb=XLSX.read(new TextDecoder('utf-8').decode(buf),{type:'string',raw:true})}else{wb=XLSX.read(buf,{type:'array'})}
+  if(!/\.csv$/i.test(f.name)){const lu=lumenImport(wb,f.name);if(lu)return {lumen:lu}}
   for(const n of wb.SheetNames){const rows=XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,raw:true,defval:''});const d=LumenEngine.detect(rows);if(d)return{kind:d.kind,rows:LumenEngine.objects(rows,d.header)}}
   return null}
 
@@ -713,7 +714,7 @@ function hideLoader(now){const w=LD.el||$('#ld');LD.el=null;if(!w)return;if(now)
 const tick=()=>new Promise(r=>requestAnimationFrame(()=>setTimeout(r,0)));
 async function addFiles(list){const bad=[],L=t();if(!list.length)return;
   showLoader(L.ldRead(list.length),L.ldStepsRead);await tick();
-  S.setId=null;let i=0;for(const f of list){try{ldStep(0,8+i/list.length*62);await tick();const r=await readFile(f);if(!r){bad.push(f.name)}else{S.src[r.kind]=r.rows;S.files[r.kind]={name:f.name,n:r.rows.length}}}catch(e){bad.push(f.name)}i++}
+  S.setId=null;let i=0;for(const f of list){try{ldStep(0,8+i/list.length*62);await tick();const r=await readFile(f);if(r&&r.lumen){await restoreLumen(r.lumen,f.name);return}if(!r){bad.push(f.name)}else{S.src[r.kind]=r.rows;S.files[r.kind]={name:f.name,n:r.rows.length}}}catch(e){bad.push(f.name)}i++}
   ldStep(1,78);await tick();recompute();ldStep(2,92);await finishLoader(900);
   if(bad.length)toast(L.unknown+bad.join(', '),false);
   S.last='';if(location.hash!=='#upload')location.hash='upload';else render()}
@@ -1015,6 +1016,42 @@ function renameDialog(id){const L=t(),s=Saves.list.find(x=>x.id===id);if(!s)retu
 function delDialog(id){const L=t(),s=Saves.list.find(x=>x.id===id);if(!s)return;
   modal(`<div class="ico" style="background:var(--negbg);width:40px;height:40px;border-radius:12px;margin-bottom:14px">${ic('trash',20,'#FF9B82',2)}</div><h2 style="font-size:19px">${esc(L.delT)}</h2><p class="mut" style="font-size:14px;margin:8px 0 0">${esc(L.delSub(s.name))}</p><div style="display:flex;gap:10px;justify-content:flex-end;margin-top:22px"><button type="button" class="btn" data-act="mclose">${esc(L.cancel)}</button><button type="button" class="btn danger" data-dodel="${esc(id)}">${esc(L.del)}</button></div>`)}
 
+/* ---------- re-import a Lumen Excel export ---------- */
+Object.assign(X.zh,{impOk:n=>`已读取 Lumen 导出文件「${n}」`,impOld:'这是旧版导出文件，金额按导出时的数字还原（广告报告的总花费等细节不会显示）',impBad:'这个 Lumen 文件读不出来，请重新导出一次'});
+Object.assign(X.en,{impOk:n=>`Loaded Lumen export “${n}”`,impOld:'Older export — amounts are restored from the exported figures (ad report spend details are not shown)',impBad:'This Lumen file could not be read — please export it again'});
+const LUMEN_DH=[['订单号','完成时间','大SKU','小SKU','产品名','规格','售价 Q','数量 R','金额 Q×R','AN 分摊','AO 分摊','AP 分摊','AI 联盟佣金','广告费 U','净利','单位成本','成本合计','扣成本后净利'],['Order ID','Completed','Parent','Variation','Product','Variation name','Q','R','Q×R','AN','AO','AP','AI','U','Net','Unit cost','Cost','True profit']];
+function lumenImport(wb,fname){
+  const ws=wb.Sheets['_lumen'];
+  if(ws){const rows=XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:''});if(String((rows[0]||[])[0])!=='LUMEN_DATA_V1')return null;
+    try{const o=JSON.parse(rows.slice(1).map(r=>String(r[0]||'')).join(''));return {src:unpack(o.data),files:o.files||{},over:o.over||{},name:o.name||'',old:false}}catch(e){return {bad:true}}}
+  // older exports: rebuild from the "Order lines" + "Costs" sheets
+  let lines=null,costs=null;
+  for(const n of wb.SheetNames){const r=XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,raw:true,defval:''});const h=(r[0]||[]).map(x=>String(x).trim());
+    if(LUMEN_DH.some(D=>D.every((x,i)=>h[i]===x)))lines=r.slice(1).filter(x=>String(x[0]).trim());
+    else if(h.length===5&&h[1]==='SKU'&&h[2]==='ITEM_COST')costs=r.slice(1).filter(x=>String(x[1]).trim())}
+  if(!lines||!lines.length)return null;
+  const N=v=>{const x=typeof v==='number'?v:parseFloat(String(v).replace(/,/g,''));return isFinite(x)?x:0};
+  const fee={},grp={};
+  lines.forEach(l=>{const o=String(l[0]).trim();const f=fee[o]=fee[o]||[0,0,0];f[0]+=N(l[9]);f[1]+=N(l[10]);f[2]+=N(l[11]);
+    const pk=o+'\u0001'+String(l[4]);grp[pk]=(grp[pk]||0)+N(l[13])});
+  const orders=lines.map(l=>{const o=String(l[0]).trim(),f=fee[o];return {'Order ID':o,'Order Complete Time':String(l[1]),'SKU Reference No.':String(l[3]),'Product Name':String(l[4]),'Variation Name':String(l[5]),'Deal Price':N(l[6]),'Quantity':N(l[7]),'Transaction Fee':f[0],'Commission Fee':f[1],'Service Fee':f[2]}});
+  const conv=lines.filter(l=>N(l[12])).map(l=>({'Order id':String(l[0]).trim(),'Item Name':String(l[4]),'Expense(RM)':N(l[12])}));
+  const cnt={};Object.keys(grp).forEach(k=>{const p=k.split('\u0001')[1],v=Math.round(grp[k]*100)/100;if(!v)return;const c=cnt[p]=cnt[p]||{};c[v]=(c[v]||0)+1});
+  const adu={};Object.keys(cnt).forEach(p=>{let best=0,bn=0;for(const v in cnt[p])if(cnt[p][v]>bn){bn=cnt[p][v];best=+v}adu[p]=best});
+  const ads=Object.keys(adu).filter(p=>adu[p]>0).map(p=>({'Ad Name':p,'Cost per Direct Conversion':Math.round(adu[p]*1e6)/1e6,'Expense':0,'Product ID':''}));
+  const cost=[],over={};
+  if(costs){const man=new Set([X.zh.sM,X.en.sM,T.zh.sM,T.en.sM].filter(Boolean));costs.forEach(c=>{if(c[3]===''||c[3]==null)return;const sku=String(c[1]).trim();
+    if(man.has(String(c[4]).trim()))over[LumenEngine.skuKey(sku)]=N(c[3]);else cost.push({'Item':sku,'Ref. Cost':N(c[3]),'Group':'Lumen'})})}
+  else{const seen={};lines.forEach(l=>{const sku=String(l[3]).trim();if(l[15]!==''&&l[15]!=null&&!seen[sku]){seen[sku]=1;cost.push({'Item':sku,'Ref. Cost':N(l[15]),'Group':'Lumen'})}})}
+  const src={orders};if(conv.length)src.conv=conv;if(ads.length)src.ads=ads;if(cost.length)src.cost=cost;
+  const files={orders:{name:fname,n:orders.length}};if(conv.length)files.conv={name:fname,n:conv.length};if(ads.length)files.ads={name:fname,n:ads.length};if(cost.length||Object.keys(over).length)files.cost={name:fname,n:cost.length};
+  return {src,files,over,name:'',old:true}}
+async function restoreLumen(r,fname){const L=t();
+  if(r.bad){hideLoader();toast(L.impBad,false);return}
+  S.src=r.src;S.files=r.files;S.over=Object.assign({},r.over);store.set('costs',S.over);S.setId=null;S.open={};S.q='';
+  ldStep(1,70);await tick();recompute();ldStep(2,90);await finishLoader(1100);S.last='';
+  if(location.hash!=='#overview')location.hash='overview';else render();toast(r.old?L.impOld:L.impOk(fname),!r.old)}
+
 async function exportX(){const L=t(),R=S.res;if(!R)return;
   const H=lang==='zh'?['大SKU','小SKU','产品名','均价 Q','销量 R','营业额 Q×R','AN 手续费','AO 佣金','AP 服务费','AI 联盟佣金','广告费 U','总扣费','净利','单位成本','成本合计','扣成本后净利','利润率']:['Parent SKU','Variation','Product','Avg Q','Units R','Revenue Q×R','AN','AO','AP','AI','Ads U','Deductions','Net','Unit cost','Cost','True profit','Margin'];
   const r2=n=>(typeof n==='number'&&isFinite(n))?Math.round(n*100)/100:'';
@@ -1028,6 +1065,8 @@ async function exportX(){const L=t(),R=S.res;if(!R)return;
   const srcL={exact:L.sE,parent:L.sP,manual:L.sM,none:L.lgX};
   const w3=XLSX.utils.aoa_to_sheet([[L.hSku,'SKU','ITEM_COST',L.hUC,L.src]].concat(R.skus.slice().sort((a,b)=>a.sku.localeCompare(b.sku)).map(s=>[s.master,s.sku,s.citem||'',s.uc==null?'':s.uc,srcL[s.csrc]])));
   const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,w1,lang==='zh'?'汇总':'Summary');XLSX.utils.book_append_sheet(wb,w2,lang==='zh'?'订单明细':'Order lines');XLSX.utils.book_append_sheet(wb,w3,lang==='zh'?'成本':'Costs');
+  try{const js=JSON.stringify({lumen:1,v:1,files:S.files,over:S.over,name:(S.setId&&(Saves.list.find(s=>s.id===S.setId)||{}).name)||'',data:pack(S.src)});const cells=[['LUMEN_DATA_V1']];for(let i=0;i<js.length;i+=30000)cells.push([js.slice(i,i+30000)]);
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(cells),'_lumen');wb.Workbook={Sheets:wb.SheetNames.map(n=>({Hidden:n==='_lumen'?1:0}))}}catch(e){}
   const out=XLSX.write(wb,{bookType:'xlsx',type:'array'});
   const name='Lumen_'+(R.daily.length?R.daily[0].day+'_'+R.daily[R.daily.length-1].day:'report')+'.xlsx';
   
