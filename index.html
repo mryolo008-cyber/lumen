@@ -362,6 +362,11 @@ main.anim .hs{animation:slidein .5s cubic-bezier(.2,.7,.2,1) both;animation-dela
 .ldn{display:flex;align-items:flex-start;gap:9px;margin-top:4px;padding:11px 14px;border-radius:12px;font-size:13px;line-height:1.55;text-align:left;color:var(--ink);border:1px solid rgba(99,232,176,.28);background:rgba(99,232,176,.08);animation:rise .4s cubic-bezier(.2,.7,.2,1) both}
 .ldn svg{flex:none;margin-top:2px}.ldn.warn{border-color:rgba(244,196,90,.32);background:rgba(244,196,90,.08)}.ldn.bad{border-color:rgba(255,143,115,.35);background:rgba(255,143,115,.09)}
 .ld.err .ldr{animation-play-state:paused;opacity:.35}
+.ld.fl{cursor:pointer}.ld.fl .ldb{gap:18px}.ld.fl .ldt{font-size:17px;max-width:340px;line-height:1.5}
+.ld.fl .ldr{animation:flring .7s cubic-bezier(.2,.7,.2,1) both}.ld.fl .ldr.r1{border-color:rgba(99,232,176,.9)}.ld.fl .ldr.r2{border-color:rgba(99,232,176,.28)}
+.ld.fl .ldc{background:linear-gradient(145deg,#8DF0C4,#2FC08A);animation:flpop .5s cubic-bezier(.2,1.4,.4,1) both}
+.ld.fl.warn .ldr.r1{border-color:rgba(244,196,90,.9)}.ld.fl.warn .ldr.r2{border-color:rgba(244,196,90,.28)}.ld.fl.warn .ldc{background:linear-gradient(145deg,#FFE09A,#E9A93A)}
+@keyframes flring{from{transform:scale(.6) rotate(-90deg);opacity:0}to{transform:none;opacity:1}}@keyframes flpop{from{transform:scale(.4);opacity:0}to{transform:none;opacity:1}}
 @media (prefers-reduced-motion:reduce){.ldr,.ldc,.ldp{animation:none!important}}
 @media (max-width:1100px){.slots{grid-template-columns:repeat(2,minmax(0,1fr))}.row,.ins{grid-template-columns:minmax(0,1fr)}}
 @media (max-width:900px){.app{flex-direction:column}.side{width:auto;height:auto;position:static;flex-direction:row;flex-wrap:wrap;align-items:center;padding:12px;border-right:0;border-bottom:1px solid var(--line)}.brand{padding:4px 8px;width:100%}.sect,.nav .badge{display:none}.shop{margin:6px 0 0;width:100%;padding:0;border:0;background:none}.shop .bar,.shop span,.shop b{display:none}.swb{margin-top:0;width:auto}.nav{padding:8px 10px}.nav.on:before{display:none}.grid4{grid-template-columns:repeat(2,minmax(0,1fr))}.wf .t{height:180px}.wf .x{font-size:10px}.chk{grid-template-columns:auto minmax(0,1fr)}.chk .meter,.chk .num{grid-column:2}}
@@ -698,7 +703,11 @@ trash:'<path d="M4 7h16M10 11v6M14 11v6"/><path d="M6 7l1 13h10l1-13M9 7V4h6v3"/
 ad:'<path d="M3 11v2a1 1 0 0 0 1 1h3l5 4V6L7 10H4a1 1 0 0 0-1 1z"/><path d="M16 9a3 3 0 0 1 0 6M19 6a7 7 0 0 1 0 12"/>'};
 const ic=(n,s,c,w)=>`<svg width="${s||18}" height="${s||18}" viewBox="0 0 24 24" fill="none" stroke="${c||'currentColor'}" stroke-width="${w||1.8}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${IC[n]}</svg>`;
 
-function toast(m,ok){const e=$('#toast');e.innerHTML=(ok===false?ic('alert',16,'#B5651D',2.2):ic('check',16,'#1F9D6B',2.4))+'<span></span>';e.querySelector('span').textContent=m;e.classList.remove('hide');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.add('hide'),2800)}
+function toast(m,ok){if(LD.el){ldNote(m,ok===false?'warn':'ok');return}
+  const o=$('#fl');if(o)o.remove();clearTimeout(toast.t);const bad=ok===false;const w=document.createElement('div');w.className='ld fl'+(bad?' warn':'');w.id='fl';w.setAttribute('role','status');w.setAttribute('aria-live','polite');
+  w.innerHTML=`<div class="ldb"><div class="ldo"><span class="ldr r1"></span><span class="ldr r2"></span><span class="ldc">${bad?ic('alert',28,'#0A0D18',2.4):ic('check',28,'#0A0D18',2.6)}</span></div><b class="ldt"></b></div>`;
+  w.querySelector('.ldt').textContent=m;document.body.appendChild(w);const close=()=>{if(!w.isConnected)return;w.classList.add('out');setTimeout(()=>w.remove(),400)};
+  w.addEventListener('click',close);toast.t=setTimeout(close,bad?2600:1500)}
 function recompute(){if(!S.src.orders){S.res=null;return}S.res=LumenEngine.compute(S.src,S.over)}
 async function readFile(f){
   const buf=await f.arrayBuffer();let wb;
@@ -718,8 +727,7 @@ const tick=()=>new Promise(r=>requestAnimationFrame(()=>setTimeout(r,0)));
 async function addFiles(list){const bad=[],L=t();if(!list.length)return;
   showLoader(L.ldRead(list.length),L.ldStepsRead);await tick();
   S.setId=null;let i=0;for(const f of list){try{ldStep(0,8+i/list.length*62);await tick();const r=await readFile(f);if(r&&r.lumen){await restoreLumen(r.lumen,f.name);return}if(!r){bad.push(f.name)}else{S.src[r.kind]=r.rows;S.files[r.kind]={name:f.name,n:r.rows.length}}}catch(e){bad.push(f.name)}i++}
-  ldStep(1,78);await tick();recompute();ldStep(2,92);await finishLoader(900);
-  if(bad.length)toast(L.unknown+bad.join(', '),false);
+  ldStep(1,78);await tick();recompute();ldStep(2,92);if(bad.length)ldNote(L.unknown+bad.join(', '),'warn');await finishLoader(bad.length?2600:900);
   S.last='';if(location.hash!=='#upload')location.hash='upload';else render()}
 async function buildReport(){const L=t();showLoader(L.ldBuild,L.ldStepsBuild);ldStep(0,30);await tick();await new Promise(r=>setTimeout(r,250));ldStep(1,70);await tick();await finishLoader(1100);S.last='';location.hash='overview'}
 
@@ -1001,8 +1009,8 @@ async function doSave(update){const L=t(),R=S.res;const name=(($('#sname')||{}).
   catch(e){btns.forEach(b=>b.disabled=false);toast(e&&e.code==='quota_exceeded'?L.saveFull:L.saveFail,false)}}
 async function openSet(id){const L=t(),nm=(Saves.list.find(x=>x.id===id)||{}).name||'';showLoader(L.ldOpen(nm),L.ldStepsOpen);
   try{ldStep(0,15);const {meta,data}=await Saves.load(id);ldStep(1,55);await tick();S.src=unpack(data);S.files=meta.files||{};if(meta.over)S.over=Object.assign({},S.over,meta.over);store.set('costs',S.over);
-    S.setId=id;S.open={};S.q='';ldStep(2,80);await tick();recompute();await finishLoader(1300);S.last='';if(location.hash!=='#overview')location.hash='overview';else render();toast(L.openedOk(meta.name))}
-  catch(e){hideLoader();toast(L.openFail,false)}}
+    S.setId=id;S.open={};S.q='';ldStep(2,80);await tick();recompute();ldNote(L.openedOk(meta.name),'ok');await finishLoader(1700);S.last='';if(location.hash!=='#overview')location.hash='overview';else render()}
+  catch(e){if(LD.el)LD.el.classList.add('err');ldNote(L.openFail,'bad');await new Promise(z=>setTimeout(z,2600));hideLoader()}}
 function vSaved(){const L=t();
   if(!Saves.loaded){Saves.refresh().then(render).catch(()=>{Saves.loaded=true;render()});return `<div class="card empty">${esc(L.loading)}</div>`}
   const note=`<p class="dim" style="font-size:13px;margin:-6px 0 18px">${esc(Saves.mode==='cloud'?L.savedCloudNote:(Saves.mode==='local'?L.savedLocalNote:L.savedNone))}</p>`;
