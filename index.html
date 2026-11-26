@@ -1199,7 +1199,7 @@ async function exportX(){const L=t(),R=S.res;if(!R)return;const tot=R.tot,per=pe
   try{const js=JSON.stringify({lumen:1,v:1,files:S.files,over:S.over,name:(S.setId&&(Saves.list.find(s=>s.id===S.setId)||{}).name)||'',data:pack(S.src)});const cells=[['LUMEN_DATA_V1']];for(let i=0;i<js.length;i+=30000)cells.push([js.slice(i,i+30000)]);
     XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(cells),'_lumen');wb.Workbook={Sheets:wb.SheetNames.map(n=>({Hidden:n==='_lumen'?1:0}))}}catch(e){}
   let out=XLSX.write(wb,{bookType:'xlsx',type:'array'});
-  out=xFinish(out,[{x:2,y:8,outline:true,collapsed},{x:1,y:1},{y:1},null]);
+  out=xFinish(out,[{y:8,outline:true,collapsed},{y:1},{y:1},null]);
   const name=(lang==='zh'?'Lumen_营销报告_':'Lumen_Marketing_')+(R.daily.length?R.daily[0].day+'_'+R.daily[R.daily.length-1].day:'report')+'.xlsx';
   await saveBlob(out,name,L.expOk)}
 
