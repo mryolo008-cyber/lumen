@@ -411,7 +411,7 @@ main.anim .hs{animation:slidein .5s cubic-bezier(.2,.7,.2,1) both;animation-dela
 .top .period .msel{margin-top:2px}
 .pend .pamt{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex:none}.pend .pamt b{font-size:22px;color:var(--warn);font-weight:600}
 .pend .pamt span{font-size:12px}
-.pendl{text-decoration:none;border-bottom:1px dashed currentColor}
+.pendl{text-decoration:none;border-bottom:1px dashed currentColor;white-space:nowrap;display:inline-block}
 @media (max-width:640px){.pend .hd{flex-direction:column}.pend .pamt{align-items:flex-start}}
 
 /* no blinking text cursor on display text — only real inputs get a caret */
@@ -424,6 +424,12 @@ a.brand{text-decoration:none;color:inherit;cursor:pointer;border-radius:12px;tra
 .paycard:hover{transform:translateY(-2px)}.paycard.on{box-shadow:0 0 0 1px color-mix(in srgb,var(--pc) 55%,transparent) inset,0 18px 40px -24px var(--pc)}
 .paycard .v{font-size:34px;margin-top:14px}.paycard .s{margin-top:8px}
 @media (max-width:760px){.grid2{grid-template-columns:minmax(0,1fr)}}
+.netstrip{margin-top:14px;display:grid;grid-template-columns:minmax(240px,1fr) 2fr;gap:28px;align-items:center;background:radial-gradient(90% 140% at 0% 0%,rgba(82,224,166,.13),transparent 60%) padding-box,linear-gradient(180deg,var(--panel2),var(--panel)) padding-box,linear-gradient(120deg,rgba(82,224,166,.45),rgba(82,224,166,.06) 60%) border-box;border:1px solid transparent}
+.netstrip .l{display:flex;align-items:center;gap:10px;font-size:13.5px;color:var(--mut)}.netstrip .ico{width:32px;height:32px;border-radius:10px;display:grid;place-items:center}
+.netstrip .v{font-size:38px;font-weight:600;letter-spacing:-.02em;margin-top:12px}.netstrip .v small{font-size:14px;color:var(--dim);margin-right:6px;font-weight:500}.netstrip .s{font-size:12.5px;color:var(--mut);margin-top:6px;line-height:1.55}
+.netstrip .eq{display:flex;flex-wrap:wrap;align-items:center;gap:10px 12px}.netstrip .term{display:flex;flex-direction:column;gap:4px;padding:10px 14px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid var(--line)}
+.netstrip .term .dim{font-size:11.5px}.netstrip .term b{font-size:16px;font-weight:600}.netstrip .term.res{background:var(--posbg);border-color:rgba(82,224,166,.3)}.netstrip .op{color:var(--dim);font-size:18px}
+@media (max-width:980px){.netstrip{grid-template-columns:minmax(0,1fr);gap:16px}}
 </style>
 </head>
 <body>
@@ -712,7 +718,9 @@ var LumenEngine = (function () {
     F.plat = 'tiktok';
     F.ads = [];
     F.month = month || ''; F.excluded = Object.keys(exOrders).length;
-    F.paid = paid; tot.paidOrders = paid.length; tot.paidAmt = paid.reduce(function (s, p) { return s + p.settle; }, 0); tot.reimb = reimb;
+    var setCost = 0, setMiss = {}; lines.forEach(function (l) { if (l.unset) return; setCost += l.cost; if (l.uc == null) setMiss[l.sku] = 1; });
+    tot.setCost = setCost; tot.setMissing = Object.keys(setMiss).length;
+    F.paid = paid; tot.paidOrders = paid.length; tot.paidAmt = paid.reduce(function (s, p) { return s + p.settle; }, 0); tot.reimb = reimb; tot.recvNet = tot.paidAmt - setCost - shopAds + reimb;
     F.checks = { tt: true, incomeOrders: incOrders, matched: Object.keys(seen).length, orders: tot.orders, unsetOrders: tot.unsetOrders, unsetRev: tot.unsetRev,
       feeOrders: feeOrders, feeAllocated: lines.reduce(function (s, l) { return s + l.fees + l.ai + l.u; }, 0), refund: refund, subIncome: subIncome,
       shopAds: shopAds, gmv: gmv, reimb: reimb, costItems: Object.keys(ct.exact).length };
@@ -943,7 +951,7 @@ function vOverview(){const L=t(),R=S.res;if(!R)return empty();const tt=R.tot,rv=
   const chart=dailyChart(R,L);
   const topL=topCard(R,L);
   const nl=R.insights.loss.length;
-  return `<div class="grid4">${kp}</div>
+  return `<div class="grid4">${kp}</div>${recvStrip(R)}
   <div class="row"><section class="card"><div class="hd"><div><h2>${esc(L.wfT)}</h2><div class="sub">RM · ${esc(period())}</div></div></div>${wf}</section>
   <section class="card" style="display:flex;flex-direction:column"><div class="hd"><div><h2>${esc(L.whereT)}</h2><div class="sub">${esc(L.whereS)}</div></div><span class="chip-s" style="background:rgba(255,255,255,.05);color:var(--mut)">RM ${f2(tt.rev)} = 100%</span></div>${donut}</section></div>
   <div class="row"><section class="card" id="dcard" style="display:flex;flex-direction:column">${chart}</section>
@@ -1391,6 +1399,20 @@ function vPayout(){const L=t(),R=S.res;if(!R)return empty();
   return cards+`<div class="tnotes" style="margin:14px 2px 0">${notes.map(x=>`<span>${ic('alert',13,'#9AA6FF',2.2)}${esc(x)}</span>`).join('')}</div>
   <div class="hd" style="margin:26px 0 0;align-items:flex-end"><div><h2 style="font-size:17px">${esc(tab==='paid'?L.paidT:L.pendT2)} <span class="chip-s" style="background:${tab==='paid'?'var(--posbg)':'var(--warnbg)'};color:${tab==='paid'?'var(--pos)':'var(--warn)'};margin-left:6px">${f0(tab==='paid'?paid.length:P.length)}</span></h2></div>
   <div class="pseg" style="margin:0"><button type="button" class="${tab==='paid'?'on':''}" data-pay="paid" style="--pc:#52E0A6;--pb:var(--posbg)">${esc(L.paidT)}</button><button type="button" class="${tab==='pend'?'on':''}" data-pay="pend" style="--pc:#F4C45A;--pb:var(--warnbg)">${esc(L.pendT2)}</button></div></div>`+table}
+
+/* ---------- net earned from money already received ---------- */
+Object.assign(X.zh,{rnT:'净赚 · 已到账',rnS:'只算已经到账的钱：扣掉这些订单的货品成本和店铺广告后，真正落袋的利润',rnShopee:'Shopee 完成订单都已结算，净赚 = 真实净利',
+  rnPaid:'已到账',rnCost:'货品成本',rnAds:'店铺广告',rnReimb:'平台补偿',rnPend:a=>`另有 RM ${a} 未到账，没算进来`,rnMiss:n=>`${n} 个已到账 SKU 缺成本，净赚偏高`,rnFees:'平台费用等',rnRev:'营业额'});
+Object.assign(X.en,{rnT:'Net earned · received',rnS:'Only money already paid out: after the cost of goods for those orders and shop ads — the profit actually in hand',rnShopee:'Shopee completed orders are all settled, so net earned = true profit',
+  rnPaid:'Received',rnCost:'Cost of goods',rnAds:'Shop ads',rnReimb:'Reimbursement',rnPend:a=>`RM ${a} not received yet is not included`,rnMiss:n=>`${n} received SKUs missing cost — reads high`,rnFees:'Fees etc.',rnRev:'Revenue'});
+function recvStrip(R){const L=t(),tt=R.tot,tk=R.plat==='tiktok';
+  const v=tk?tt.recvNet:tt.net2,parts=tk?[[L.rnPaid,tt.paidAmt,'#52E0A6',''],[L.rnCost,-tt.setCost,'#F4C45A','−'],[L.rnAds,-tt.shopAds,'#FF8F73','−']].concat(tt.reimb?[[L.rnReimb,tt.reimb,'#9AA6FF','+']]:[])
+    :[[L.rnRev,tt.rev,'#9AA6FF',''],[L.rnFees,-(tt.rev-tt.net),'#FF8F73','−'],[L.rnCost,-tt.cost,'#F4C45A','−']];
+  const notes=tk?[tt.unsetOrders?L.rnPend(f2(tt.unsetRev)):'',tt.setMissing?L.rnMiss(tt.setMissing):''].filter(Boolean):[L.rnShopee];
+  return `<section class="card netstrip"><div class="nsl"><div class="l"><span class="ico" style="background:var(--posbg)">${ic('cash',16,'#52E0A6',2)}</span>${esc(L.rnT)}</div>
+    <div class="v num ${v<0?'neg':'pos'}"><small>RM</small><span data-count="${v}">${f2(v)}</span></div><div class="s">${esc(L.rnS)}</div></div>
+    <div class="nsr"><div class="eq">${parts.map(([l,x,c,sg],i)=>`${i?`<span class="op">${sg}</span>`:''}<span class="term"><span class="dim">${esc(l)}</span><b class="num" style="color:${c}">${f2(Math.abs(x))}</b></span>`).join('')}<span class="op">=</span><span class="term res"><span class="dim">${esc(L.rnT.split(' ·')[0])}</span><b class="num ${v<0?'neg':'pos'}">${f2(v)}</b></span></div>
+    ${notes.length?`<div class="tnotes" style="margin-top:12px">${notes.map(x=>`<span>${ic('alert',13,'#F4C45A',2.2)}${esc(x)}</span>`).join('')}</div>`:''}</div></section>`}
 
 /* ---------- styled Excel exports (xlsx-js-style) ---------- */
 Object.assign(X.zh,{expOk:'营销报告已导出',xT:'Lumen 真利 · 营销报告',xPer:'期间',xGen:'生成于',xKRev:'营业额',xKNet:'真实净利',xKMg:'利润率',xKOrd:'订单',xKUnits:'销量',
