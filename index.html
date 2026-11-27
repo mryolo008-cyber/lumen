@@ -418,12 +418,13 @@ main.anim .hs{animation:slidein .5s cubic-bezier(.2,.7,.2,1) both;animation-dela
 html,body{caret-color:transparent}
 input,textarea,select,[contenteditable="true"]{caret-color:auto}
 .side,.top,.kpi,.dc,.donut,.ring,.br,.bridge,.alloc,.dstats,.tp,.chk,.ii,.pseg,.sseg,.msel,.nav,.btn,.tag,.chip-s,.badge,.hs,.hsl,.ld,.dz,.tpc,.tsb,.tsl,.legend,svg,thead,th{-webkit-user-select:none;user-select:none}
+a.brand{text-decoration:none;color:inherit;cursor:pointer;border-radius:12px;transition:opacity .2s}a.brand:hover{opacity:.82}a.brand:hover .logo{transform:rotate(-6deg) scale(1.05)}a.brand .logo{transition:transform .25s}
 </style>
 </head>
 <body>
 <div class="app">
 <aside class="side">
-<div class="brow"><div class="brand"><span class="logo"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#0A0D18" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M4 18 L10 11 L14 14 L20 6"/><path d="M15 6 H20 V11"/></svg></span>Lumen <b>真利</b></div></div>
+<div class="brow"><a class="brand" href="#upload" title="Lumen"><span class="logo"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#0A0D18" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M4 18 L10 11 L14 14 L20 6"/><path d="M15 6 H20 V11"/></svg></span>Lumen <b>真利</b></a></div>
 <nav id="nav" style="display:contents"></nav>
 <div class="shop" id="shop"></div>
 </aside>
@@ -842,7 +843,7 @@ function toast(m,ok){if(LD.el){ldNote(m,ok===false?'warn':'ok');return}
   w.innerHTML=`<div class="ldb"><div class="ldo"><span class="ldr r1"></span><span class="ldr r2"></span><span class="ldc">${bad?ic('alert',28,'#0A0D18',2.4):ic('check',28,'#0A0D18',2.6)}</span></div><b class="ldt"></b></div>`;
   w.querySelector('.ldt').textContent=m;document.body.appendChild(w);const close=()=>{if(!w.isConnected)return;w.classList.add('out');setTimeout(()=>w.remove(),400)};
   w.addEventListener('click',close);toast.t=setTimeout(close,bad?2600:1500)}
-function recompute(){ensureMonth();const M=LumenEngine.months(S.src);S.resS=S.src.orders&&M.shopee[S.month]?LumenEngine.compute(S.src,S.over,S.month):null;S.resT=S.src.tt_orders&&M.tiktok[S.month]?LumenEngine.computeTT(S.src,S.over,S.month):null;S.res=S.plat==='tiktok'?S.resT:S.resS;if(!S.res&&(S.resS||S.resT))setPlat(S.resS?'shopee':'tiktok')}
+function recompute(){ensureMonth();const M=LumenEngine.months(S.src);S.resS=S.src.orders&&M.shopee[S.month]?LumenEngine.compute(S.src,S.over,S.month):null;S.resT=S.src.tt_orders&&M.tiktok[S.month]?LumenEngine.computeTT(S.src,S.over,S.month):null;S.res=S.plat==='tiktok'?S.resT:S.resS;if(S.autoPlat){S.autoPlat=0;if(!S.res&&(S.resS||S.resT))setPlat(S.resS?'shopee':'tiktok')}}
 async function readFile(f){
   const buf=await f.arrayBuffer();let wb;
   if(/\.csv$/i.test(f.name)){wb=XLSX.read(new TextDecoder('utf-8').decode(buf),{type:'string',raw:true})}else{wb=XLSX.read(buf,{type:'array'})}
@@ -860,7 +861,7 @@ function hideLoader(now){const w=LD.el||$('#ld');LD.el=null;if(!w)return;if(now)
 const tick=()=>new Promise(r=>requestAnimationFrame(()=>setTimeout(r,0)));
 async function addFiles(list){const bad=[],L=t();if(!list.length)return;
   showLoader(L.ldRead(list.length),L.ldStepsRead);await tick();
-  S.setId=null;S.month='';let i=0;const plats={};let addedInc=0;for(const f of list){try{ldStep(0,8+i/list.length*62);await tick();const r=await readFile(f);if(r&&r.lumen){await restoreLumen(r.lumen,f.name);return}if(!r){bad.push(f.name)}else{const pk=platOf(r.kind);if(pk)plats[pk]=1;if(r.kind==='tt_income'&&S.src.tt_income&&addedInc){S.src.tt_income=S.src.tt_income.concat(r.rows);S.files.tt_income={name:S.files.tt_income.name+' + '+f.name,n:S.files.tt_income.n+r.rows.length}}else{S.src[r.kind]=r.rows;S.files[r.kind]={name:f.name,n:r.rows.length}}if(r.kind==='tt_income')addedInc=1}}catch(e){bad.push(f.name)}i++}
+  S.setId=null;S.month='';S.autoPlat=1;let i=0;const plats={};let addedInc=0;for(const f of list){try{ldStep(0,8+i/list.length*62);await tick();const r=await readFile(f);if(r&&r.lumen){await restoreLumen(r.lumen,f.name);return}if(!r){bad.push(f.name)}else{const pk=platOf(r.kind);if(pk)plats[pk]=1;if(r.kind==='tt_income'&&S.src.tt_income&&addedInc){S.src.tt_income=S.src.tt_income.concat(r.rows);S.files.tt_income={name:S.files.tt_income.name+' + '+f.name,n:S.files.tt_income.n+r.rows.length}}else{S.src[r.kind]=r.rows;S.files[r.kind]={name:f.name,n:r.rows.length}}if(r.kind==='tt_income')addedInc=1}}catch(e){bad.push(f.name)}i++}
   const pl=Object.keys(plats);if(pl.length===1)setPlat(pl[0]);
   ldStep(1,78);await tick();recompute();ldStep(2,92);if(bad.length)ldNote(L.unknown+bad.join(', '),'warn');await finishLoader(bad.length?2600:900);
   S.last='';if(location.hash!=='#upload')location.hash='upload';else render()}
@@ -868,14 +869,14 @@ async function buildReport(){const L=t();showLoader(L.ldBuild,L.ldStepsBuild);ld
 
 const views=['upload','saved','overview','skus','insights','costs','total'];
 const APPV=['overview','skus','insights','costs','total'];
-function view(){const h=location.hash.slice(1);if(h==='saved')return 'upload';if(h==='total')return anyRes()?'total':'upload';if(views.includes(h))return (!S.res&&APPV.includes(h))?'upload':h;return S.res?'overview':'upload'}
+function view(){const h=location.hash.slice(1);if(h==='saved')return 'upload';if(h==='total')return anyRes()?'total':'upload';if(views.includes(h))return (!anyRes()&&APPV.includes(h))?'upload':h;return anyRes()?'overview':'upload'}
 function period(){if(S.month&&anyRes())return monthRange(S.month);if(location.hash==='#total')return totalPeriod();const R=S.res;return R&&R.daily.length?`${R.daily[0].day} – ${R.daily[R.daily.length-1].day}`:''}
 function top(title,extra){const L=t(),p=period();
   return `<div><h1>${esc(title)}</h1>${p?(S.month&&anyRes()?`<div class="period">${monthSel()}</div>`:`<div class="period"><i></i><span class="num">${esc(p)}</span></div>`):`<div class="period" style="color:var(--dim)">${esc(L.noFiles)}</div>`}</div><div class="tools">${extra||''}</div>`}
 const langBtn=()=>`<button type="button" class="lb" data-lang="${lang==='zh'?'en':'zh'}" aria-label="${lang==='zh'?'Switch to English':'切换到中文'}" title="${lang==='zh'?'English':'中文'}">${ic('globe',15)}<span>${lang==='zh'?'EN':'中文'}</span></button>`;
 const saveBtn=()=>`<button type="button" class="btn" data-act="save">${ic('save',16)}${esc(t().save)}</button>`;
 const expBtn=()=>`<button type="button" class="btn" data-act="expcost">${ic('costs',16)}${esc(t().expCost)}</button><button type="button" class="btn" data-act="export">${ic('dl',16)}${esc(t().export)}</button>`;
-function empty(){const L=t();return `<div class="card empty"><div class="upi">${ic('upload',26,'#B9C3FF')}</div><h2 style="font:600 22px 'Geist','Noto Sans SC'">${esc(L.noData)}</h2><p style="max-width:420px;margin:10px auto 22px">${esc(L.noDataSub)}</p><a class="btn pri" href="#upload">${esc(L.goUpload)}</a></div>`}
+function empty(){const L=t();if(anyRes())return noPlatData();return `<div class="card empty"><div class="upi">${ic('upload',26,'#B9C3FF')}</div><h2 style="font:600 22px 'Geist','Noto Sans SC'">${esc(L.noData)}</h2><p style="max-width:420px;margin:10px auto 22px">${esc(L.noDataSub)}</p><a class="btn pri" href="#upload">${esc(L.goUpload)}</a></div>`}
 function spark(vals,color,id){if(vals.length<2)return'';const W=200,H=38,mx=Math.max(...vals),mn=Math.min(0,...vals),sp=(mx-mn)||1;
   const pts=vals.map((v,i)=>[i/(vals.length-1)*W,H-2-(v-mn)/sp*(H-6)]);const d=pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
   return `<svg class="spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${color}" stop-opacity=".28"/><stop offset="1" stop-color="${color}" stop-opacity="0"/></linearGradient></defs><g class="rv"><path d="${d} L${W} ${H} L0 ${H}Z" fill="url(#${id})"/><path d="${d}" fill="none" stroke="${color}" stroke-width="1.6" vector-effect="non-scaling-stroke"/></g></svg>`}
@@ -898,7 +899,7 @@ function vUpload(){const L=t(),R=S.res,n=KINDS.filter(k=>S.files[k]).length,TT=S
       [tt.missingSkus?wn:ok,L.c5,L.c5d(tt.missingSkus,missLines),`${tt.skuCount-tt.missingSkus} / ${tt.skuCount}`,(tt.skuCount-tt.missingSkus)/tt.skuCount]]);
     checks=`<section class="hck"><div class="hd" style="margin-bottom:14px;align-items:center"><div><h2 style="font-size:18px">${esc(L.checks)}</h2><div class="sub">${esc(L.matchedNote)}</div></div><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">${monthSel(true)}<button type="button" class="btn pri big" data-act="build">${esc(L.build)}</button></div></div><div class="card" style="padding:0">${items.map(([s,a,b,v,p])=>`<div class="chk"><span class="dot" style="background:${s[1]}">${ic(s[0],15,s[2],2.4)}</span><div><div style="font-weight:500">${esc(a)}</div><div class="dim" style="font-size:12.5px;margin-top:3px">${esc(b)}</div></div><div class="meter"><div style="width:${(p*100).toFixed(0)}%;background:${s[2]}"></div></div><span class="num" style="text-align:right;color:${s[2]}">${esc(v)}</span></div>`).join('')}</div></section>`}
   return `<section class="home"><div class="hl">
-    ${platSeg(S.plat)}<span class="eyebrow"><i style="background:${PLC[S.plat][0]};box-shadow:0 0 0 4px ${PLC[S.plat][1]}"></i>${esc(TT?L.hEyebrowT:L.hEyebrow)}</span>
+    ${platSeg(S.plat)}
     <h1 class="ht">${esc(L.hT1)}<br><span class="grad">${esc(L.hT2)}</span></h1>
     <p class="hp">${esc(TT?L.uSubT:L.uSub)}</p>
     <div class="hfe">${feats.map(([i,x])=>`<span>${ic(i,15,'#C3CBFF',2)}${esc(x)}</span>`).join('')}</div>
@@ -1060,13 +1061,13 @@ function animate(m){m.classList.remove('anim');void m.offsetWidth;m.classList.ad
   clearTimeout(animate.t);animate.t=setTimeout(()=>m.classList.remove('anim'),2600)}
 function render(){const L=t(),v=view();document.documentElement.lang=lang==='zh'?'zh':'en';
   const R=S.res,badge={saved:Saves.list.length,insights:R?R.insights.loss.length+R.insights.adHeavy.length+(R.tot.unsetOrders?1:0):0,costs:R?R.tot.missingSkus:0};
-  const appMode=APPV.includes(v)&&(v==='total'?anyRes():!!R);document.body.classList.toggle('start',!appMode);
+  const appMode=APPV.includes(v)&&anyRes();document.body.classList.toggle('start',!appMode);
   $('#nav').innerHTML=!appMode?'':sidePlat(v)+`<div class="sect">${esc(L.sect)}</div>`+APPV.filter(k=>k!=='total').map(k=>`<a class="nav ${v===k?'on':''}" href="#${k}">${ic(k,18)}<span>${esc(L[k])}</span>${badge[k]?`<span class="badge ${k==='saved'?'b2':''}">${badge[k]}</span>`:''}</a>`).join('')+`<div class="sect">${esc(L.pTotal)}</div><a class="nav ${v==='total'?'on':''}" href="#total">${ic('layers',18)}<span>${esc(L.totT)}</span></a>`;
   const n=KINDS.filter(k=>S.files[k]).length;
   const cur=S.setId&&Saves.list.find(s=>s.id===S.setId);
   $('#shop').innerHTML=appMode?`<span class="splat" style="color:${PLC[v==='total'?'total':S.plat][0]}">${esc(v==='total'?L.pTotal:(S.plat==='tiktok'?L.pTiktok:L.pShopee))}</span><b>${esc(cur?cur.name:(v==='total'?L.pTotalS:L.files(n)))}</b>${period()?`<span class="num">${esc(period())}</span>`:''}${v==='total'?'':`<div class="bar">${KINDS.map(k=>`<i class="${S.files[k]?'on':''}"></i>`).join('')}</div>`}<div class="srow"><span class="dim">${esc(L.langL)}</span>${langBtn()}</div>`:`<b>${esc(L.privT)}</b><span>${esc(L.privS)}</span>`;
   const title=v==='total'?L.totT:({upload:L.uTitle,saved:L.savedT,overview:L.overview,skus:L.skus,insights:L.insights,costs:L.costT}[v]+(appMode?` · ${S.plat==='tiktok'?L.pTiktok:L.pShopee}`:''));
-  $('#top').innerHTML=appMode?top(title,saveBtn()+(v==='total'?`<button type="button" class="btn" data-act="exptotal">${ic('dl',16)}${esc(L.export)}</button>`:expBtn())+`<a href="#upload" class="btn swb2">${ic('upload',16)}${esc(L.switchRep)}</a>`):`<div class="tbrand"><span class="logo"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#0A0D18" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M4 18 L10 11 L14 14 L20 6"/><path d="M15 6 H20 V11"/></svg></span>Lumen <b>真利</b></div><div class="tools">${langBtn()}</div>`;
+  $('#top').innerHTML=appMode?top(title,saveBtn()+(v==='total'?`<button type="button" class="btn" data-act="exptotal">${ic('dl',16)}${esc(L.export)}</button>`:(R?expBtn():''))):`<div class="tbrand"><span class="logo"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#0A0D18" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M4 18 L10 11 L14 14 L20 6"/><path d="M15 6 H20 V11"/></svg></span>Lumen <b>真利</b></div><div class="tools">${langBtn()}</div>`;
   const fn={upload:vUpload,saved:vSaved,overview:vOverview,skus:vSkus,insights:vInsights,costs:vCosts,total:vTotal}[v];
   const keep=document.activeElement&&document.activeElement.id;const pos=keep&&document.activeElement.selectionStart;
   const m=$('#main');const go=S.last!==v&&!matchMedia('(prefers-reduced-motion: reduce)').matches;S.last=v;
@@ -1154,7 +1155,7 @@ async function doSave(update){const L=t(),R=S.res||S.resS||S.resT;const name=(($
   catch(e){btns.forEach(b=>b.disabled=false);toast(e&&e.code==='quota_exceeded'?L.saveFull:L.saveFail,false)}}
 async function openSet(id){const L=t(),nm=(Saves.list.find(x=>x.id===id)||{}).name||'';showLoader(L.ldOpen(nm),L.ldStepsOpen);
   try{ldStep(0,15);const {meta,data}=await Saves.load(id);ldStep(1,55);await tick();S.src=unpack(data);S.files=meta.files||{};if(meta.over)S.over=Object.assign({},S.over,meta.over);store.set('costs',S.over);
-    S.setId=id;S.open={};S.q='';S.month=meta.month||'';ldStep(2,80);await tick();recompute();if(!S.res)setPlat(S.resS?'shopee':'tiktok');ldNote(L.openedOk(meta.name),'ok');await finishLoader(1700);S.last='';if(location.hash!=='#overview')location.hash='overview';else render()}
+    S.setId=id;S.open={};S.q='';S.month=meta.month||'';S.autoPlat=1;ldStep(2,80);await tick();recompute();if(!S.res)setPlat(S.resS?'shopee':'tiktok');ldNote(L.openedOk(meta.name),'ok');await finishLoader(1700);S.last='';if(location.hash!=='#overview')location.hash='overview';else render()}
   catch(e){if(LD.el)LD.el.classList.add('err');ldNote(L.openFail,'bad');await new Promise(z=>setTimeout(z,2600));hideLoader()}}
 function vSaved(){const L=t();
   if(!Saves.loaded){Saves.refresh().then(render).catch(()=>{Saves.loaded=true;render()});return `<div class="card empty">${esc(L.loading)}</div>`}
@@ -1207,7 +1208,7 @@ function ldNote(x,kind){if(!LD.el)return;let n=LD.el.querySelector('.ldn');if(!n
   n.className='ldn '+(kind||'ok');n.innerHTML=(kind==='warn'||kind==='bad'?ic('alert',15,kind==='bad'?'#FF9B82':'#F4C45A',2.2):ic('check',15,'#63E8B0',2.4))+'<span></span>';n.querySelector('span').textContent=x}
 async function restoreLumen(r,fname){const L=t();ldTitle(L.impT,L.impSteps);ldStep(0,40);await tick();
   if(r.bad){LD.el&&LD.el.classList.add('err');ldNote(L.impBad,'bad');await new Promise(z=>setTimeout(z,2600));hideLoader();return}
-  S.src=r.src;S.files=r.files;S.over=Object.assign({},r.over);store.set('costs',S.over);S.setId=null;S.open={};S.q='';setPlat(r.plat||(S.src.orders?'shopee':(S.src.tt_orders?'tiktok':'shopee')));S.month=r.month||'';
+  S.src=r.src;S.files=r.files;S.over=Object.assign({},r.over);store.set('costs',S.over);S.setId=null;S.open={};S.q='';setPlat(r.plat||(S.src.orders?'shopee':(S.src.tt_orders?'tiktok':'shopee')));S.month=r.month||'';S.autoPlat=1;
   ldStep(1,65);await tick();recompute();ldStep(2,88);ldNote(r.old?L.impOld:L.impOk,r.old?'warn':'ok');await finishLoader(r.old?2800:1700);S.last='';
   if(location.hash!=='#overview')location.hash='overview';else render()}
 
@@ -1346,6 +1347,16 @@ function pendingSec(R){const L=t();if(!R||!R.tot.unsetOrders)return '';const P=p
     <div class="tbl fit" style="margin-top:16px;max-height:${S.pendAll?'none':'560px'}"><table><colgroup><col style="width:24%"><col class="h2" style="width:20%"><col><col class="h3" style="width:9%"><col style="width:16%"></colgroup><thead><tr>${L.pendH.map((h,i)=>`<th class="${i===1?'h2':i===3?'h3':''}" style="text-align:${i>=3?'right':'left'}">${esc(h)}</th>`).join('')}</tr></thead>
     <tbody>${show.map(p=>`<tr><td class="num" style="font-size:12.5px">${esc(p.oid)}</td><td class="num dim h2" style="font-size:12.5px;text-align:left">${esc(p.done)}</td><td style="text-align:left"><span class="t" title="${esc(p.skus.join(', '))}">${esc(p.skus.join(', '))}</span></td><td class="num h3" style="text-align:right">${f0(p.qty)}</td><td class="num" style="text-align:right;color:var(--warn)">${f2(p.amt)}</td></tr>`).join('')}</tbody></table></div>
     ${P.length>show.length?`<div style="text-align:center;margin-top:14px"><button type="button" class="btn" data-act="pendall">${esc(L.pendMore(f0(P.length)))}</button></div>`:''}</section>`}
+
+/* ---------- a platform with no data for the chosen month ---------- */
+Object.assign(X.zh,{ndT:(p,m)=>`${m} 没有 ${p} 数据`,ndS:p=>`这个月份还没有上传 ${p} 的报表，或者报表里没有这个月的订单。`,ndOther:'有数据的月份',ndUp:p=>`上传 ${p} 报表`,ndOtherP:p=>`查看 ${p}`});
+Object.assign(X.en,{ndT:(p,m)=>`No ${p} data for ${m}`,ndS:p=>`No ${p} reports for this month yet, or the reports have no orders in it.`,ndOther:'Months with data',ndUp:p=>`Upload ${p} reports`,ndOtherP:p=>`View ${p}`});
+function noPlatData(){const L=t(),p=S.plat,pn=p==='tiktok'?L.pTiktok:L.pShopee,op=p==='tiktok'?'shopee':'tiktok',opn=op==='tiktok'?L.pTiktok:L.pShopee;
+  const ml=monthList(),mine=ml.keys.filter(k=>ml.all[k][p]);const otherHas=op==='tiktok'?S.resT:S.resS;
+  return `<div class="card empty nd" style="--pc:${PLC[p][0]};--pb:${PLC[p][1]}"><div class="upi" style="background:var(--pb);border-color:color-mix(in srgb,var(--pc) 35%,transparent)">${ic(p==='tiktok'?'note':'bag',26,PLC[p][0],2)}</div>
+  <h2 style="font:600 22px 'Geist','Noto Sans SC'">${esc(L.ndT(pn,S.month?L.mLabel(S.month):''))}</h2><p style="max-width:440px;margin:10px auto 22px">${esc(L.ndS(pn))}</p>
+  ${mine.length?`<div class="dim" style="font-size:12px;margin-bottom:10px">${esc(L.ndOther)}</div><div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:22px">${mine.map(k=>`<button type="button" class="btn" data-mgo="${k}">${ic('cal',15)}${esc(L.mLabel(k))}<span class="dim num" style="font-size:12px">${f0(ml.all[k][p])}</span></button>`).join('')}</div>`:''}
+  <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap"><a class="btn pri" href="#upload" data-plat="${p}">${ic('upload',16)}${esc(L.ndUp(pn))}</a>${otherHas?`<button type="button" class="btn" data-plat="${op}">${esc(L.ndOtherP(opn))}</button>`:''}</div></div>`}
 
 /* ---------- styled Excel exports (xlsx-js-style) ---------- */
 Object.assign(X.zh,{expOk:'营销报告已导出',xT:'Lumen 真利 · 营销报告',xPer:'期间',xGen:'生成于',xKRev:'营业额',xKNet:'真实净利',xKMg:'利润率',xKOrd:'订单',xKUnits:'销量',
@@ -1515,10 +1526,11 @@ async function exportTotal(){const L=t();if(!anyRes())return;const S2=XS,a=platT
   await saveBlob(out,(lang==='zh'?'Lumen_总汇总_':'Lumen_Total_')+per.replace(/ – /,'_')+'.xlsx',L.expOk)}
 
 
-document.addEventListener('click',e=>{const b=e.target.closest('[data-plat],[data-goflt],[data-cf],[data-edit],[data-tmode],[data-dmode],[data-lang],[data-act],[data-tog],[data-filter],[data-ins],[data-open],[data-clear],[data-openset],[data-rename],[data-del],[data-dorename],[data-dodel]');if(!b)return;
+document.addEventListener('click',e=>{const b=e.target.closest('[data-mgo],[data-plat],[data-goflt],[data-cf],[data-edit],[data-tmode],[data-dmode],[data-lang],[data-act],[data-tog],[data-filter],[data-ins],[data-open],[data-clear],[data-openset],[data-rename],[data-del],[data-dorename],[data-dodel]');if(!b)return;
   if(b.dataset.act==='save'){Saves.init().then(()=>{if(!Saves.loaded)return Saves.refresh()}).catch(()=>{}).then(openSaveDialog);return}
+  if(b.dataset.mgo){S.month=b.dataset.mgo;S.open={};recompute();S.last='';render();return}
   if(b.dataset.plat){const p=b.dataset.plat,v=view();if(p==='total'){if(anyRes())location.hash='total';return}setPlat(p);S.open={};S.q='';S.filter='all';
-    if(b.tagName==='A')return;if(v==='upload'||!S.res){if(location.hash!=='#upload')location.hash='upload';else render()}else if(v==='total'){location.hash='overview'}else{S.last='';render()}return}
+    if(b.tagName==='A')return;if(v==='upload'){render()}else if(v==='total'){location.hash='overview'}else{S.last='';render()}return}
   if(b.dataset.act==='exptotal'){exportTotal();return}
   if(b.dataset.act==='pendall'){S.pendAll=1;S.last='';render();return}
   if(b.dataset.act==='pend'){e.preventDefault();S.pendScroll=1;if(location.hash!=='#insights')location.hash='insights';else{render()}return}
