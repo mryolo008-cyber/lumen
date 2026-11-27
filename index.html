@@ -402,6 +402,17 @@ main.anim .hs{animation:slidein .5s cubic-bezier(.2,.7,.2,1) both;animation-dela
 .tpb{display:flex;flex-direction:column;gap:6px;align-items:flex-end}.tpb b{display:flex;width:100%;height:5px;border-radius:3px;overflow:hidden;gap:1px;background:rgba(255,255,255,.04);justify-content:flex-end}.tpb i{display:block;height:100%}
 @media (max-width:980px){.grid3{grid-template-columns:minmax(0,1fr)}.tshr{grid-template-columns:1fr}}
 @media (max-width:520px){.pseg{display:flex;width:100%}.pseg button{flex:1;justify-content:center;padding:9px 8px}.pseg button span{font-size:12.5px}}
+
+.msel{position:relative;display:inline-flex;align-items:center;gap:8px;padding:5px 12px 5px 10px;border:1px solid var(--line2);border-radius:999px;background:rgba(255,255,255,.035);color:var(--mut);font-size:12.5px;cursor:pointer;transition:border-color .2s,background .2s}
+.msel:hover{border-color:rgba(154,166,255,.45);background:rgba(154,166,255,.08);color:var(--ink)}
+.msel svg:first-child{color:#9AA6FF}.msel .ml{color:var(--ink);font-weight:600}.msel .mr{color:var(--dim)}
+.msel select{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;font-size:16px}
+.msel.big{padding:10px 16px 10px 14px;font-size:13.5px;border-radius:14px;min-height:46px}
+.top .period .msel{margin-top:2px}
+.pend .pamt{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex:none}.pend .pamt b{font-size:22px;color:var(--warn);font-weight:600}
+.pend .pamt span{font-size:12px}
+.pendl{text-decoration:none;border-bottom:1px dashed currentColor}
+@media (max-width:640px){.pend .hd{flex-direction:column}.pend .pamt{align-items:flex-start}}
 </style>
 </head>
 <body>
@@ -533,7 +544,8 @@ var LumenEngine = (function () {
     var missing = skus.filter(function (s) { return s.uc == null; }).sort(function (a, b) { return b.rev - a.rev; });
     return { lines: lines, skus: skus, masters: masters, tot: tot, daily: daily, insights: { loss: loss, adHeavy: adHeavy, thin: thin, missing: missing } };
   }
-  function compute(src, overrides) {
+  function monthOf(s) { var m = String(s || '').match(/^(\d{4})-(\d{2})/); return m ? m[1] + '-' + m[2] : ''; }
+  function compute(src, overrides, month) {
     overrides = overrides || {};
     var O = src.orders, C = src.conv || [], A = src.ads || [], K = src.cost || [];
     var ct = costTable(K), costExact = ct.exact, costItem = ct.item;
@@ -547,6 +559,7 @@ var LumenEngine = (function () {
         an: num(r['Transaction Fee']), ao: num(r['Commission Fee']), ap: num(r['Service Fee'])
       };
     }).filter(function (l) { return l.oid; });
+    var exOrders = {}; if (month) lines = lines.filter(function (l) { if (monthOf(l.done) === month) return true; exOrders[l.oid] = 1; return false; });
     lines.sort(function (a, b) { return a.done < b.done ? -1 : a.done > b.done ? 1 : (a.oid < b.oid ? -1 : a.oid > b.oid ? 1 : 0); });
     var byOrder = {}; lines.forEach(function (l) { (byOrder[l.oid] = byOrder[l.oid] || []).push(l); });
     var okeys = {}; lines.forEach(function (l) { okeys[l.oid + '\u0001' + l.pn] = 1; });
@@ -609,7 +622,7 @@ var LumenEngine = (function () {
       adsMatched: adsList.filter(function (a) { return a.status === 'matched'; }).length, adsShop: adsList.filter(function (a) { return a.status === 'shop'; }).length,
       adsNoOrders: adsList.filter(function (a) { return a.status === 'noorders'; }).length, adsCount: adsList.length, costItems: Object.keys(costExact).length
     };
-    return { plat: 'shopee', lines: lines, skus: skus, masters: masters, tot: tot, daily: daily, ads: adsList, checks: checks,
+    return { plat: 'shopee', month: month || '', excluded: Object.keys(exOrders).length, lines: lines, skus: skus, masters: masters, tot: tot, daily: daily, ads: adsList, checks: checks,
       insights: { loss: loss, adHeavy: adHeavy, thin: thin, missing: missing } };
   }
 
@@ -623,7 +636,7 @@ var LumenEngine = (function () {
   }
   var TT_AFF = ['Affiliate Commission', 'Affiliate partner commission', 'Affiliate commission deposit', 'Affiliate commission refund'];
   var TT_ADS = ['Affiliate Shop Ads commission', 'Affiliate Partner shop ads commission', 'GMV Max ad fee'];
-  function computeTT(src, overrides) {
+  function computeTT(src, overrides, month) {
     overrides = overrides || {};
     var ct = costTable(src.cost);
     var inc = {}, shopAds = 0, gmv = [], reimb = 0, incOrders = 0;
@@ -632,8 +645,8 @@ var LumenEngine = (function () {
       if (!id || !/^\d+$/.test(id)) return;
       if (type !== 'Order') {
         var amt = num(r['Adjustment amount']) || num(r['Total settlement amount']);
-        if (/ads/i.test(type)) { if (!inc['ad:' + id]) { inc['ad:' + id] = 1; shopAds += -amt; gmv.push({ id: id, day: ttDate(r['Order settled time']), amt: -amt }); } }
-        else if (!inc['adj:' + id]) { inc['adj:' + id] = 1; reimb += amt; }
+        if (/ads/i.test(type)) { if (month && monthOf(ttDate(r['Order settled time'])) !== month) return; if (!inc['ad:' + id]) { inc['ad:' + id] = 1; shopAds += -amt; gmv.push({ id: id, day: ttDate(r['Order settled time']), amt: -amt }); } }
+        else if (!inc['adj:' + id] && (!month || monthOf(ttDate(r['Order settled time'])) === month)) { inc['adj:' + id] = 1; reimb += amt; }
         return;
       }
       if (inc[id]) return;
@@ -652,6 +665,7 @@ var LumenEngine = (function () {
       return { oid: oid, done: ttDate(r['Created Time']), sku: sku, master: skuKey(sku).split(' ')[0] || '(—)',
         pname: clean(r['Product Name']), pn: norm(r['Product Name']), variation: clean(r['Variation']), qty: qty, gross: amt };
     }).filter(Boolean);
+    var exOrders = {}; if (month) lines = lines.filter(function (l) { if (monthOf(l.done) === month) return true; exOrders[l.oid] = 1; return false; });
     lines.sort(function (a, b) { return a.done < b.done ? -1 : a.done > b.done ? 1 : (a.oid < b.oid ? -1 : a.oid > b.oid ? 1 : 0); });
     var osum = {}, ocnt = {}; lines.forEach(function (l) { osum[l.oid] = (osum[l.oid] || 0) + l.gross; ocnt[l.oid] = (ocnt[l.oid] || 0) + 1; });
     var feeOrders = 0, seen = {}, unsetOrders = {}, refund = 0, subIncome = 0;
@@ -681,12 +695,20 @@ var LumenEngine = (function () {
     function bySkuUnset(sku) { var n = 0; unsetLines.forEach(function (l) { if (l.sku === sku) n++; }); return n; }
     F.plat = 'tiktok';
     F.ads = [];
+    F.month = month || ''; F.excluded = Object.keys(exOrders).length;
     F.checks = { tt: true, incomeOrders: incOrders, matched: Object.keys(seen).length, orders: tot.orders, unsetOrders: tot.unsetOrders, unsetRev: tot.unsetRev,
       feeOrders: feeOrders, feeAllocated: lines.reduce(function (s, l) { return s + l.fees + l.ai + l.u; }, 0), refund: refund, subIncome: subIncome,
       shopAds: shopAds, gmv: gmv, reimb: reimb, costItems: Object.keys(ct.exact).length };
     return F;
   }
-  return { detect: detect, objects: objects, compute: compute, computeTT: computeTT, skuKey: skuKey, num: num };
+
+  function months(src) {
+    var out = { shopee: {}, tiktok: {} }, seen = {};
+    (src.orders || []).forEach(function (r) { var id = clean(r['Order ID']), m = monthOf(clean(r['Order Complete Time'])); if (!id || !m || seen['s' + id]) return; seen['s' + id] = 1; out.shopee[m] = (out.shopee[m] || 0) + 1; });
+    (src.tt_orders || []).forEach(function (r) { var id = clean(r['Order ID']), m = monthOf(ttDate(r['Created Time'])); if (!/^\d+$/.test(id) || !num(r['Quantity']) || !m || seen['t' + id]) return; seen['t' + id] = 1; out.tiktok[m] = (out.tiktok[m] || 0) + 1; });
+    return out;
+  }
+  return { detect: detect, objects: objects, compute: compute, computeTT: computeTT, months: months, monthOf: monthOf, skuKey: skuKey, num: num };
 })();
 if (typeof module !== 'undefined') module.exports = LumenEngine;
 
@@ -811,7 +833,7 @@ function toast(m,ok){if(LD.el){ldNote(m,ok===false?'warn':'ok');return}
   w.innerHTML=`<div class="ldb"><div class="ldo"><span class="ldr r1"></span><span class="ldr r2"></span><span class="ldc">${bad?ic('alert',28,'#0A0D18',2.4):ic('check',28,'#0A0D18',2.6)}</span></div><b class="ldt"></b></div>`;
   w.querySelector('.ldt').textContent=m;document.body.appendChild(w);const close=()=>{if(!w.isConnected)return;w.classList.add('out');setTimeout(()=>w.remove(),400)};
   w.addEventListener('click',close);toast.t=setTimeout(close,bad?2600:1500)}
-function recompute(){S.resS=S.src.orders?LumenEngine.compute(S.src,S.over):null;S.resT=S.src.tt_orders?LumenEngine.computeTT(S.src,S.over):null;S.res=S.plat==='tiktok'?S.resT:S.resS}
+function recompute(){ensureMonth();const M=LumenEngine.months(S.src);S.resS=S.src.orders&&M.shopee[S.month]?LumenEngine.compute(S.src,S.over,S.month):null;S.resT=S.src.tt_orders&&M.tiktok[S.month]?LumenEngine.computeTT(S.src,S.over,S.month):null;S.res=S.plat==='tiktok'?S.resT:S.resS;if(!S.res&&(S.resS||S.resT))setPlat(S.resS?'shopee':'tiktok')}
 async function readFile(f){
   const buf=await f.arrayBuffer();let wb;
   if(/\.csv$/i.test(f.name)){wb=XLSX.read(new TextDecoder('utf-8').decode(buf),{type:'string',raw:true})}else{wb=XLSX.read(buf,{type:'array'})}
@@ -829,7 +851,7 @@ function hideLoader(now){const w=LD.el||$('#ld');LD.el=null;if(!w)return;if(now)
 const tick=()=>new Promise(r=>requestAnimationFrame(()=>setTimeout(r,0)));
 async function addFiles(list){const bad=[],L=t();if(!list.length)return;
   showLoader(L.ldRead(list.length),L.ldStepsRead);await tick();
-  S.setId=null;let i=0;const plats={};let addedInc=0;for(const f of list){try{ldStep(0,8+i/list.length*62);await tick();const r=await readFile(f);if(r&&r.lumen){await restoreLumen(r.lumen,f.name);return}if(!r){bad.push(f.name)}else{const pk=platOf(r.kind);if(pk)plats[pk]=1;if(r.kind==='tt_income'&&S.src.tt_income&&addedInc){S.src.tt_income=S.src.tt_income.concat(r.rows);S.files.tt_income={name:S.files.tt_income.name+' + '+f.name,n:S.files.tt_income.n+r.rows.length}}else{S.src[r.kind]=r.rows;S.files[r.kind]={name:f.name,n:r.rows.length}}if(r.kind==='tt_income')addedInc=1}}catch(e){bad.push(f.name)}i++}
+  S.setId=null;S.month='';let i=0;const plats={};let addedInc=0;for(const f of list){try{ldStep(0,8+i/list.length*62);await tick();const r=await readFile(f);if(r&&r.lumen){await restoreLumen(r.lumen,f.name);return}if(!r){bad.push(f.name)}else{const pk=platOf(r.kind);if(pk)plats[pk]=1;if(r.kind==='tt_income'&&S.src.tt_income&&addedInc){S.src.tt_income=S.src.tt_income.concat(r.rows);S.files.tt_income={name:S.files.tt_income.name+' + '+f.name,n:S.files.tt_income.n+r.rows.length}}else{S.src[r.kind]=r.rows;S.files[r.kind]={name:f.name,n:r.rows.length}}if(r.kind==='tt_income')addedInc=1}}catch(e){bad.push(f.name)}i++}
   const pl=Object.keys(plats);if(pl.length===1)setPlat(pl[0]);
   ldStep(1,78);await tick();recompute();ldStep(2,92);if(bad.length)ldNote(L.unknown+bad.join(', '),'warn');await finishLoader(bad.length?2600:900);
   S.last='';if(location.hash!=='#upload')location.hash='upload';else render()}
@@ -838,9 +860,9 @@ async function buildReport(){const L=t();showLoader(L.ldBuild,L.ldStepsBuild);ld
 const views=['upload','saved','overview','skus','insights','costs','total'];
 const APPV=['overview','skus','insights','costs','total'];
 function view(){const h=location.hash.slice(1);if(h==='saved')return 'upload';if(h==='total')return anyRes()?'total':'upload';if(views.includes(h))return (!S.res&&APPV.includes(h))?'upload':h;return S.res?'overview':'upload'}
-function period(){if(location.hash==='#total')return totalPeriod();const R=S.res;return R&&R.daily.length?`${R.daily[0].day} – ${R.daily[R.daily.length-1].day}`:''}
+function period(){if(S.month&&anyRes())return monthRange(S.month);if(location.hash==='#total')return totalPeriod();const R=S.res;return R&&R.daily.length?`${R.daily[0].day} – ${R.daily[R.daily.length-1].day}`:''}
 function top(title,extra){const L=t(),p=period();
-  return `<div><h1>${esc(title)}</h1>${p?`<div class="period"><i></i><span class="num">${esc(p)}</span></div>`:`<div class="period" style="color:var(--dim)">${esc(L.noFiles)}</div>`}</div><div class="tools">${extra||''}</div>`}
+  return `<div><h1>${esc(title)}</h1>${p?(S.month&&anyRes()?`<div class="period">${monthSel()}</div>`:`<div class="period"><i></i><span class="num">${esc(p)}</span></div>`):`<div class="period" style="color:var(--dim)">${esc(L.noFiles)}</div>`}</div><div class="tools">${extra||''}</div>`}
 const langBtn=()=>`<button type="button" class="lb" data-lang="${lang==='zh'?'en':'zh'}" aria-label="${lang==='zh'?'Switch to English':'切换到中文'}" title="${lang==='zh'?'English':'中文'}">${ic('globe',15)}<span>${lang==='zh'?'EN':'中文'}</span></button>`;
 const saveBtn=()=>`<button type="button" class="btn" data-act="save">${ic('save',16)}${esc(t().save)}</button>`;
 const expBtn=()=>`<button type="button" class="btn" data-act="expcost">${ic('costs',16)}${esc(t().expCost)}</button><button type="button" class="btn" data-act="export">${ic('dl',16)}${esc(t().export)}</button>`;
@@ -855,14 +877,17 @@ function vUpload(){const L=t(),R=S.res,n=KINDS.filter(k=>S.files[k]).length,TT=S
   const feats=[['bolt',L.hf1],['check',L.hf2],['dl',L.hf3]];
   const recent=(!R&&Saves.list.length)?`<div class="hrec"><div class="hrh"><span>${esc(L.recent)}</span><a href="#saved">${esc(L.all)}</a></div>${Saves.list.slice(0,3).map(s=>`<button type="button" class="hri" data-openset="${esc(s.id)}"><span class="hrc">${ic('saved',14,'#C3CBFF',2)}</span><span class="hrn"><b>${esc(s.name)}</b><span class="num">${esc(s.period||'')}</span></span><span class="num pos">${f2((s.summary||{}).net2||0)}</span>${ic('chev',14)}</button>`).join('')}</div>`:'';
   let checks='';
+  if(!R&&S.files[TT?'tt_orders':'orders']&&S.month){const ml=monthList(),mine=ml.keys.filter(k=>ml.all[k][S.plat]);
+    checks=`<section class="hck"><div class="hd" style="margin-bottom:14px;align-items:center"><div><h2 style="font-size:18px">${esc(L.checks)}</h2><div class="sub">${esc(L.matchedNote)}</div></div><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">${monthSel(true)}</div></div>
+    <div class="card"><div class="chk" style="border:0"><span class="dot" style="background:var(--warnbg)">${ic('alert',15,'#F4C45A',2.4)}</span><div><div style="font-weight:500">${esc(L.noMonth(L.mLabel(S.month),TT?L.pTiktok:L.pShopee))}</div><div class="dim" style="font-size:12.5px;margin-top:3px">${esc(L.noMonthS(mine.map(k=>L.mLabel(k)).join('、')))}</div></div></div></div></section>`}
   if(R){const c=R.checks,tt=R.tot,ok=['check','var(--posbg)','#52E0A6'],wn=['alert','var(--warnbg)','#F4C45A'];
     const missLines=R.lines.filter(l=>l.uc==null).length;
-    const items=TT?ttChecks(R,L):[[ok,L.c1,L.c1d(tt.skuCount,tt.masterCount),`${tt.skuCount} / ${tt.skuCount}`,1],
+    const mck=monthCheck(R,L);const items=(mck?[mck]:[]).concat(TT?ttChecks(R,L):[[ok,L.c1,L.c1d(tt.skuCount,tt.masterCount),`${tt.skuCount} / ${tt.skuCount}`,1],
       [ok,L.c2,L.c2d(f2(c.feeOrders),f2(c.feeAllocated)),`${f0(tt.orders)} / ${f0(tt.orders)}`,1],
       [S.files.conv?ok:wn,L.c3,S.files.conv?L.c3d(c.fuzzy.length):L.waiting,S.files.conv?`${c.convRows} / ${c.convRows}`:'—',S.files.conv?1:0],
       [S.files.ads?ok:wn,L.c4,S.files.ads?L.c4d(c.adsMatched,c.adsShop,c.adsNoOrders):L.waiting,S.files.ads?`${c.adsMatched} / ${c.adsCount}`:'—',c.adsCount?c.adsMatched/c.adsCount:0],
-      [tt.missingSkus?wn:ok,L.c5,L.c5d(tt.missingSkus,missLines),`${tt.skuCount-tt.missingSkus} / ${tt.skuCount}`,(tt.skuCount-tt.missingSkus)/tt.skuCount]];
-    checks=`<section class="hck"><div class="hd" style="margin-bottom:14px;align-items:center"><div><h2 style="font-size:18px">${esc(L.checks)}</h2><div class="sub">${esc(L.matchedNote)}</div></div><button type="button" class="btn pri big" data-act="build">${esc(L.build)}</button></div><div class="card" style="padding:0">${items.map(([s,a,b,v,p])=>`<div class="chk"><span class="dot" style="background:${s[1]}">${ic(s[0],15,s[2],2.4)}</span><div><div style="font-weight:500">${esc(a)}</div><div class="dim" style="font-size:12.5px;margin-top:3px">${esc(b)}</div></div><div class="meter"><div style="width:${(p*100).toFixed(0)}%;background:${s[2]}"></div></div><span class="num" style="text-align:right;color:${s[2]}">${esc(v)}</span></div>`).join('')}</div></section>`}
+      [tt.missingSkus?wn:ok,L.c5,L.c5d(tt.missingSkus,missLines),`${tt.skuCount-tt.missingSkus} / ${tt.skuCount}`,(tt.skuCount-tt.missingSkus)/tt.skuCount]]);
+    checks=`<section class="hck"><div class="hd" style="margin-bottom:14px;align-items:center"><div><h2 style="font-size:18px">${esc(L.checks)}</h2><div class="sub">${esc(L.matchedNote)}</div></div><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">${monthSel(true)}<button type="button" class="btn pri big" data-act="build">${esc(L.build)}</button></div></div><div class="card" style="padding:0">${items.map(([s,a,b,v,p])=>`<div class="chk"><span class="dot" style="background:${s[1]}">${ic(s[0],15,s[2],2.4)}</span><div><div style="font-weight:500">${esc(a)}</div><div class="dim" style="font-size:12.5px;margin-top:3px">${esc(b)}</div></div><div class="meter"><div style="width:${(p*100).toFixed(0)}%;background:${s[2]}"></div></div><span class="num" style="text-align:right;color:${s[2]}">${esc(v)}</span></div>`).join('')}</div></section>`}
   return `<section class="home"><div class="hl">
     ${platSeg(S.plat)}<span class="eyebrow"><i style="background:${PLC[S.plat][0]};box-shadow:0 0 0 4px ${PLC[S.plat][1]}"></i>${esc(TT?L.hEyebrowT:L.hEyebrow)}</span>
     <h1 class="ht">${esc(L.hT1)}<br><span class="grad">${esc(L.hT2)}</span></h1>
@@ -881,7 +906,7 @@ function vOverview(){const L=t(),R=S.res;if(!R)return empty();const tt=R.tot,rv=
     ['minus','var(--negbg)','#FF8F73',L.kDed,tt.ded,'neg',`<span class="chip-s" style="background:var(--negbg);color:var(--neg)">${pc(tt.ded/rv)}</span> ${esc(L.ofRev)}`,`<div style="display:flex;height:8px;border-radius:5px;overflow:hidden;margin-top:22px;gap:2px">${[[tt.ao,'#FF8F73'],[tt.ap,'#FFB49F'],[tt.sh||0,'#F2A07E'],[tt.u,'#E0664A'],[tt.an,'#C95A42'],[tt.ai,'#8E4535']].map(([v,c])=>`<i style="flex:${(v/(tt.ded||1)).toFixed(4)};background:${c}"></i>`).join('')}</div>`],
     ['trend','rgba(255,255,255,.05)','#EEF1F7',L.kNet,tt.net,'',`<span class="chip-s" style="background:rgba(255,255,255,.06);color:var(--ink)">${pc(tt.netMargin)}</span> ${esc(L.marginL)}`,spark(D.map(d=>d.net||0),'#C3CBFF','sp3')],
     ['gem','var(--posbg)','#40D99A',L.kTP,tt.net2,tt.net2<0?'neg':'pos',`<span class="chip-s" style="background:var(--posbg);color:var(--pos)">${pc(tt.margin)}</span> ${esc(L.marginL)}${tt.missingSkus?` · <span class="warn">${esc(L.nNoCost(tt.missingSkus))}</span>`:''}`,spark(D.map(d=>d.net2),'#40D99A','sp2')]];
-  const kp=k.map(([i,bg,c,l,v,cl,s,sp],j)=>`<div class="card kpi ${j===3?'hero':''}"><div class="l"><span class="ico" style="background:${bg}">${ic(i,16,c,2)}</span>${esc(l)}</div><div class="v num ${cl}"><small>RM</small><span data-count="${v}">${f2(v)}</span></div><div class="s">${j===0?esc(s):s}</div>${sp}</div>`).join('');
+  const kp=k.map(([i,bg,c,l,v,cl,s,sp],j)=>`<div class="card kpi ${j===3?'hero':''}"><div class="l"><span class="ico" style="background:${bg}">${ic(i,16,c,2)}</span>${esc(l)}</div><div class="v num ${cl}"><small>RM</small><span data-count="${v}">${f2(v)}</span></div><div class="s">${j===0?esc(s)+(tt.unsetOrders?` · <a href="#insights" class="warn pendl" data-act="pend">${esc(L.pendShort(f2(tt.unsetRev)))}</a>`:''):s}</div>${sp}</div>`).join('');
   let rem=tt.rev;const br=[[L.wR,tt.rev,0,'#9AA6FF']];
   const FL=feeList(tt,L,R);FL.forEach(([l,v],i)=>{rem-=v;br.push([l,v,rem,i===FL.length-1?'#F4C45A':'#FF9B82'])});
   const wf=`<div class="bridge">${br.map(([l,v,left,c],i)=>{const first=i===0;const lw=Math.max(0,first?v:left)/rv*100,dw=first?0:v/rv*100;
@@ -929,7 +954,7 @@ function vInsights(){const L=t(),R=S.res;if(!R)return empty();const I=R.insights
     miss:['#F4C45A','var(--warnbg)','costs',L.iMiss,L.iMissS,L.iMissA,[L.cLines,L.hRev,L.hUnits],I.missing.map(s=>[s.sku,'',f0(s.lines),f2(s.rev),f0(s.units),0])]};
   const go={loss:'#skus',ads:'#skus',thin:'#skus',miss:'#costs'},flt={loss:'loss',ads:'all',thin:'all',miss:'miss'};
   const list=Object.keys(defs).map((k,i)=>{const d=defs[k];return `<a class="ii" href="${go[k]}" data-goflt="${flt[k]}" style="--i:${i}"><span class="dot" style="width:44px;height:44px;border-radius:13px;background:${d[1]}">${ic(d[2],20,d[0],2)}</span><span style="flex:1;min-width:0"><b style="display:block;font-weight:600;font-size:15px">${esc(d[3])}</b><span class="ds">${esc(d[4])}</span></span><span class="cnt" style="color:${d[7].length?d[0]:'var(--dim)'}">${d[7].length}</span><span class="dim" style="flex:none">${ic('chev',16)}</span></a>`}).join('');
-  return `<div style="display:flex;flex-direction:column;gap:12px">${list}</div>`}
+  return `<div style="display:flex;flex-direction:column;gap:12px">${list}</div>${pendingSec(R)}`}
 function vCosts(){const L=t(),R=S.res;if(!R)return empty();const tt=R.tot,n=tt.skuCount||1,cov=(n-tt.missingSkus)/n;
   const miss=R.skus.filter(s=>s.uc==null).sort((a,b)=>b.rev-a.rev);
   const mRev=miss.reduce((s,x)=>s+x.rev,0),mLines=miss.reduce((s,x)=>s+x.lines,0),mMax=Math.max(...miss.map(x=>x.rev),1);
@@ -1025,7 +1050,7 @@ function animate(m){m.classList.remove('anim');void m.offsetWidth;m.classList.ad
   m.querySelectorAll('[data-count]').forEach(el=>{const to=+el.dataset.count,t0=performance.now(),D=1100;const step=now=>{const p=Math.min(1,(now-t0)/D),e=1-Math.pow(1-p,4);el.textContent=f2(to*e);if(p<1)requestAnimationFrame(step);else el.textContent=f2(to)};requestAnimationFrame(step)});
   clearTimeout(animate.t);animate.t=setTimeout(()=>m.classList.remove('anim'),2600)}
 function render(){const L=t(),v=view();document.documentElement.lang=lang==='zh'?'zh':'en';
-  const R=S.res,badge={saved:Saves.list.length,insights:R?R.insights.loss.length+R.insights.adHeavy.length:0,costs:R?R.tot.missingSkus:0};
+  const R=S.res,badge={saved:Saves.list.length,insights:R?R.insights.loss.length+R.insights.adHeavy.length+(R.tot.unsetOrders?1:0):0,costs:R?R.tot.missingSkus:0};
   const appMode=APPV.includes(v)&&(v==='total'?anyRes():!!R);document.body.classList.toggle('start',!appMode);
   $('#nav').innerHTML=!appMode?'':sidePlat(v)+`<div class="sect">${esc(L.sect)}</div>`+APPV.filter(k=>k!=='total').map(k=>`<a class="nav ${v===k?'on':''}" href="#${k}">${ic(k,18)}<span>${esc(L[k])}</span>${badge[k]?`<span class="badge ${k==='saved'?'b2':''}">${badge[k]}</span>`:''}</a>`).join('')+`<div class="sect">${esc(L.pTotal)}</div><a class="nav ${v==='total'?'on':''}" href="#total">${ic('layers',18)}<span>${esc(L.totT)}</span></a>`;
   const n=KINDS.filter(k=>S.files[k]).length;
@@ -1038,6 +1063,7 @@ function render(){const L=t(),v=view();document.documentElement.lang=lang==='zh'
   const m=$('#main');const go=S.last!==v&&!matchMedia('(prefers-reduced-motion: reduce)').matches;S.last=v;
   m.innerHTML=fn();
   if(S.last2!==v){S.last2=v;toTop();requestAnimationFrame(toTop);setTimeout(toTop,120)}
+  if(S.pendScroll&&v==='insights'){S.pendScroll=0;setTimeout(()=>{const p=$('#pending');if(p)p.scrollIntoView({behavior:'smooth',block:'start'})},300)}
   if(go)animate(m);
   if(location.hash==='#saved'){const ss=$('#savedsec');if(ss)setTimeout(()=>ss.scrollIntoView({behavior:'smooth',block:'start'}),go?350:0)}
   if(keep&&$('#'+keep)){const e=$('#'+keep);e.focus();try{e.setSelectionRange(pos,pos)}catch(x){}}
@@ -1114,12 +1140,12 @@ function openSaveDialog(){const L=t(),R=S.res||S.resS||S.resT;if(!R)return;const
   <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:22px;flex-wrap:wrap"><button type="button" class="btn" data-act="mclose">${esc(L.cancel)}</button>${cur?`<button type="button" class="btn" data-act="dosave-new">${esc(L.saveAsNew)}</button><button type="button" class="btn pri" data-act="dosave-upd">${esc(L.saveUpdate)}</button>`:`<button type="button" class="btn pri" data-act="dosave-new">${esc(L.saveBtn)}</button>`}</div>`)}
 async function doSave(update){const L=t(),R=S.res||S.resS||S.resT;const name=(($('#sname')||{}).value||'').trim()||period()||L.untitled;
   const btns=document.querySelectorAll('#modal .btn');btns.forEach(b=>b.disabled=true);
-  try{const meta={name,period:period(),files:S.files,over:S.over,summary:(()=>{const z=combinedTot();return {rev:z.rev,net2:z.net2,orders:z.orders,margin:z.margin,missing:z.miss}})()};
+  try{const meta={name,period:period(),files:S.files,over:S.over,month:S.month||'',summary:(()=>{const z=combinedTot();return {rev:z.rev,net2:z.net2,orders:z.orders,margin:z.margin,missing:z.miss}})()};
     const id=await Saves.save(meta,JSON.stringify(pack(S.src)),update?S.setId:null);S.setId=id;closeModal();toast(L.savedOk(name));render()}
   catch(e){btns.forEach(b=>b.disabled=false);toast(e&&e.code==='quota_exceeded'?L.saveFull:L.saveFail,false)}}
 async function openSet(id){const L=t(),nm=(Saves.list.find(x=>x.id===id)||{}).name||'';showLoader(L.ldOpen(nm),L.ldStepsOpen);
   try{ldStep(0,15);const {meta,data}=await Saves.load(id);ldStep(1,55);await tick();S.src=unpack(data);S.files=meta.files||{};if(meta.over)S.over=Object.assign({},S.over,meta.over);store.set('costs',S.over);
-    S.setId=id;S.open={};S.q='';ldStep(2,80);await tick();recompute();if(!S.res)setPlat(S.resS?'shopee':'tiktok');ldNote(L.openedOk(meta.name),'ok');await finishLoader(1700);S.last='';if(location.hash!=='#overview')location.hash='overview';else render()}
+    S.setId=id;S.open={};S.q='';S.month=meta.month||'';ldStep(2,80);await tick();recompute();if(!S.res)setPlat(S.resS?'shopee':'tiktok');ldNote(L.openedOk(meta.name),'ok');await finishLoader(1700);S.last='';if(location.hash!=='#overview')location.hash='overview';else render()}
   catch(e){if(LD.el)LD.el.classList.add('err');ldNote(L.openFail,'bad');await new Promise(z=>setTimeout(z,2600));hideLoader()}}
 function vSaved(){const L=t();
   if(!Saves.loaded){Saves.refresh().then(render).catch(()=>{Saves.loaded=true;render()});return `<div class="card empty">${esc(L.loading)}</div>`}
@@ -1144,7 +1170,7 @@ const LUMEN_DH=[['订单号','完成时间','大SKU','小SKU','产品名','规�
 function lumenImport(wb,fname){
   const ws=wb.Sheets['_lumen'];
   if(ws){const rows=XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:''});if(String((rows[0]||[])[0])!=='LUMEN_DATA_V1')return null;
-    try{const o=JSON.parse(rows.slice(1).map(r=>String(r[0]||'')).join(''));return {src:unpack(o.data),files:o.files||{},over:o.over||{},name:o.name||'',plat:o.plat,old:false}}catch(e){return {bad:true}}}
+    try{const o=JSON.parse(rows.slice(1).map(r=>String(r[0]||'')).join(''));return {src:unpack(o.data),files:o.files||{},over:o.over||{},name:o.name||'',plat:o.plat,month:o.month||'',old:false}}catch(e){return {bad:true}}}
   // older exports: rebuild from the "Order lines" + "Costs" sheets
   let lines=null,costs=null;
   for(const n of wb.SheetNames){const r=XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,raw:true,defval:''});const h=(r[0]||[]).map(x=>String(x).trim());
@@ -1172,7 +1198,7 @@ function ldNote(x,kind){if(!LD.el)return;let n=LD.el.querySelector('.ldn');if(!n
   n.className='ldn '+(kind||'ok');n.innerHTML=(kind==='warn'||kind==='bad'?ic('alert',15,kind==='bad'?'#FF9B82':'#F4C45A',2.2):ic('check',15,'#63E8B0',2.4))+'<span></span>';n.querySelector('span').textContent=x}
 async function restoreLumen(r,fname){const L=t();ldTitle(L.impT,L.impSteps);ldStep(0,40);await tick();
   if(r.bad){LD.el&&LD.el.classList.add('err');ldNote(L.impBad,'bad');await new Promise(z=>setTimeout(z,2600));hideLoader();return}
-  S.src=r.src;S.files=r.files;S.over=Object.assign({},r.over);store.set('costs',S.over);S.setId=null;S.open={};S.q='';setPlat(r.plat||(S.src.orders?'shopee':(S.src.tt_orders?'tiktok':'shopee')));
+  S.src=r.src;S.files=r.files;S.over=Object.assign({},r.over);store.set('costs',S.over);S.setId=null;S.open={};S.q='';setPlat(r.plat||(S.src.orders?'shopee':(S.src.tt_orders?'tiktok':'shopee')));S.month=r.month||'';
   ldStep(1,65);await tick();recompute();ldStep(2,88);ldNote(r.old?L.impOld:L.impOk,r.old?'warn':'ok');await finishLoader(r.old?2800:1700);S.last='';
   if(location.hash!=='#overview')location.hash='overview';else render()}
 
@@ -1278,6 +1304,39 @@ function vTotal(){const L=t();if(!anyRes())return `<div class="card empty"><div 
   const prod=`<div class="hd" style="margin:30px 0 12px;align-items:flex-end"><div><h2 style="font-size:17px">${esc(L.totProd)} <span class="chip-s" style="background:var(--soft);color:var(--mut);margin-left:6px">${P.length}</span></h2><div class="sub">${esc(L.totProdS)}</div></div></div>
     <div class="tbl fit"><table><colgroup><col><col class="h2" style="width:13%"><col class="h2" style="width:13%"><col class="h1" style="width:13%"><col style="width:24%"><col class="h3" style="width:9%"></colgroup><thead><tr><th>${esc(L.hSku)}</th><th class="h2"><span class="pdot" style="background:${PLC.shopee[0]}"></span>${esc(L.pShopee)}</th><th class="h2"><span class="pdot" style="background:${PLC.tiktok[0]}"></span>${esc(L.pTiktok)}</th><th class="h1">${esc(L.tRev)}</th><th style="color:var(--ink)">${esc(L.tNet2)}</th><th class="h3">${esc(L.tMg)}</th></tr></thead><tbody>${prow}</tbody></table></div>`;
   return cards+cmp+prod}
+
+/* ---------- one calendar month per calculation ---------- */
+Object.assign(X.zh,{mLabel:m=>{const [y,mo]=m.split('-');return `${y} 年 ${+mo} 月`},mRange:m=>`1–${monthDays(m)} 日`,mPick:'计算月份',mOrders:n=>`${f0(n)} 单`,
+  mc:'只计算一个月',noMonth:(m,p)=>`${m} 没有 ${p} 订单`,noMonthS:x=>`已上传的 ${'文件'}里有这些月份：${x}。在上面切换月份，或上传这个月的报表。`,mcd:(m,d1,d2,ex)=>`${X.zh.mLabel(m)} 1–${monthDays(m)} 日 · 数据实际覆盖 ${d1}–${d2} 日${ex?` · 已排除其他月份 ${f0(ex)} 张订单`:''}`,mOther:n=>`文件里还有其他 ${n} 个月，可在上方切换`});
+Object.assign(X.en,{mLabel:m=>{const [y,mo]=m.split('-');return new Date(+y,+mo-1,1).toLocaleString('en-GB',{month:'short',year:'numeric'})},mRange:m=>`1–${monthDays(m)}`,mPick:'Month',mOrders:n=>`${f0(n)} orders`,
+  mc:'One month only',noMonth:(m,p)=>`No ${p} orders in ${m}`,noMonthS:x=>`Your uploaded files cover: ${x}. Switch month above or upload this month's reports.`,mcd:(m,d1,d2,ex)=>`${X.en.mLabel(m)} 1–${monthDays(m)} · data covers day ${d1}–${d2}${ex?` · ${f0(ex)} orders from other months excluded`:''}`,mOther:n=>`${n} other month(s) in the files — switch above`});
+function monthDays(m){const [y,mo]=m.split('-').map(Number);return new Date(y,mo,0).getDate()}
+function monthList(){const M=LumenEngine.months(S.src),all={};['shopee','tiktok'].forEach(p=>Object.keys(M[p]).forEach(m=>{all[m]=all[m]||{shopee:0,tiktok:0};all[m][p]=M[p][m]}));return {all,keys:Object.keys(all).sort().reverse()}}
+function ensureMonth(){const ml=monthList();if(!ml.keys.length){S.month='';return}if(S.month&&ml.all[S.month])return;
+  let best=ml.keys[0],bn=-1;ml.keys.forEach(m=>{const n=ml.all[m].shopee+ml.all[m].tiktok;if(n>bn){bn=n;best=m}});S.month=best}
+function monthRange(m){return m?`${m}-01 – ${m}-${String(monthDays(m)).padStart(2,'0')}`:''}
+function monthSel(big){const L=t(),ml=monthList();if(!ml.keys.length||!S.month)return '';
+  const opts=ml.keys.map(m=>{const c=ml.all[m];const n=c.shopee+c.tiktok;return `<option value="${m}" ${m===S.month?'selected':''}>${esc(L.mLabel(m))} · ${esc(L.mRange(m))} · ${esc(L.mOrders(n))}</option>`}).join('');
+  return `<label class="msel ${big?'big':''}" title="${esc(L.mPick)}">${ic('cal',14,'currentColor',2)}<span class="ml">${esc(L.mLabel(S.month))}</span><span class="mr num">${esc(L.mRange(S.month))}</span>${ml.keys.length>1?ic('chev',13,'currentColor',2.2):''}<select data-month aria-label="${esc(L.mPick)}">${opts}</select></label>`}
+function monthCheck(R,L){const ok=['check','var(--posbg)','#52E0A6'],wn=['alert','var(--warnbg)','#F4C45A'];if(!R||!R.month)return null;
+  const d=R.daily,d1=d.length?+d[0].day.slice(8,10):0,d2=d.length?+d[d.length-1].day.slice(8,10):0,days=monthDays(R.month),full=d1===1&&d2===days;
+  const other=monthList().keys.length-1;
+  return [full&&!R.excluded?ok:wn,L.mc,L.mcd(R.month,d1,d2,R.excluded)+(other>0?' · '+L.mOther(other):''),`${d.length} / ${days}`,d.length/days]}
+
+/* ---------- orders not paid out yet (TikTok, not in any income file) ---------- */
+IC.cal='<rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M8 3v4M16 3v4M3.5 10h17"/>';
+IC.clock='<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>';
+Object.assign(X.zh,{pendShort:a=>`RM ${a} 未到账`,pendT:'未到账订单',pendS:(n,a)=>`这 ${n} 张订单 TikTok 还没结算，RM ${a} 还没进你的账户；它们的平台费用也还没扣，所以利润暂时偏高。加上下个月的 income 结算表后会自动更新。`,
+  pendAmt:'未到账金额',pendH:['订单号','下单时间','SKU','数量','金额'],pendMore:n=>`显示全部 ${n} 张`,pendSheet:'未到账'});
+Object.assign(X.en,{pendShort:a=>`RM ${a} not paid out`,pendT:'Not paid out yet',pendS:(n,a)=>`TikTok has not settled these ${n} orders yet, so RM ${a} has not reached your account and their platform fees are not deducted yet (profit reads high). Add next month's income file and they update automatically.`,
+  pendAmt:'Not paid out',pendH:['Order ID','Ordered','SKU','Qty','Amount'],pendMore:n=>`Show all ${n}`,pendSheet:'Not paid out'});
+function pendingOrders(R){const o={},list=[];(R&&R.lines||[]).forEach(l=>{if(!l.unset)return;let x=o[l.oid];if(!x){x=o[l.oid]={oid:l.oid,done:l.done,skus:[],qty:0,amt:0};list.push(x)}if(!x.skus.includes(l.sku))x.skus.push(l.sku);x.qty+=l.qty;x.amt+=l.amt});return list}
+function pendingSec(R){const L=t();if(!R||!R.tot.unsetOrders)return '';const P=pendingOrders(R),show=S.pendAll?P:P.slice(0,60);
+  return `<section id="pending" class="card pend" style="margin-top:26px;scroll-margin-top:96px"><div class="hd" style="align-items:flex-start"><div style="display:flex;gap:14px;align-items:flex-start"><span class="dot" style="width:44px;height:44px;border-radius:13px;background:var(--warnbg);flex:none">${ic('clock',20,'#F4C45A',2)}</span><div><h2>${esc(L.pendT)} <span class="chip-s" style="background:var(--warnbg);color:var(--warn);margin-left:6px">${f0(P.length)}</span></h2><div class="sub" style="max-width:680px;line-height:1.6;margin-top:6px">${esc(L.pendS(f0(P.length),f2(R.tot.unsetRev)))}</div></div></div>
+    <div class="pamt"><span class="dim">${esc(L.pendAmt)}</span><b class="num">RM ${f2(R.tot.unsetRev)}</b></div></div>
+    <div class="tbl fit" style="margin-top:16px;max-height:${S.pendAll?'none':'560px'}"><table><colgroup><col style="width:24%"><col class="h2" style="width:20%"><col><col class="h3" style="width:9%"><col style="width:16%"></colgroup><thead><tr>${L.pendH.map((h,i)=>`<th class="${i===1?'h2':i===3?'h3':''}" style="text-align:${i>=3?'right':'left'}">${esc(h)}</th>`).join('')}</tr></thead>
+    <tbody>${show.map(p=>`<tr><td class="num" style="font-size:12.5px">${esc(p.oid)}</td><td class="num dim h2" style="font-size:12.5px;text-align:left">${esc(p.done)}</td><td style="text-align:left"><span class="t" title="${esc(p.skus.join(', '))}">${esc(p.skus.join(', '))}</span></td><td class="num h3" style="text-align:right">${f0(p.qty)}</td><td class="num" style="text-align:right;color:var(--warn)">${f2(p.amt)}</td></tr>`).join('')}</tbody></table></div>
+    ${P.length>show.length?`<div style="text-align:center;margin-top:14px"><button type="button" class="btn" data-act="pendall">${esc(L.pendMore(f0(P.length)))}</button></div>`:''}</section>`}
 
 /* ---------- styled Excel exports (xlsx-js-style) ---------- */
 Object.assign(X.zh,{expOk:'营销报告已导出',xT:'Lumen 真利 · 营销报告',xPer:'期间',xGen:'生成于',xKRev:'营业额',xKNet:'真实净利',xKMg:'利润率',xKOrd:'订单',xKUnits:'销量',
@@ -1404,11 +1463,19 @@ async function exportX(){const L=t(),R=S.res;if(!R)return;const tot=R.tot,per=pe
   xRef(w3,sk.length+1,5);w3['!rows']=[{hpt:28}];w3['!autofilter']={ref:'A1:E'+(sk.length+1)};w3['!cols']=[{wch:12},{wch:32},{wch:32},{wch:12},{wch:14}];
   XLSX.utils.book_append_sheet(wb,w3,L.xCosts);
 
+  /* ---- TikTok: orders not paid out yet ---- */
+  if(tk&&tot.unsetOrders){const P=pendingOrders(R),w4={};L.pendH.forEach((h,k)=>xPut(w4,0,k,h,S2.head(k>=3)));
+    P.forEach((p,i)=>{const row=i+1,z=i%2?{fill:'FFFBEA'}:{};xPut(w4,row,0,p.oid,S2.cell(Object.assign({},z,{indent:1})));xPut(w4,row,1,p.done,S2.cell(Object.assign({},z,{color:S2.MUT})));xPut(w4,row,2,p.skus.join(', '),S2.cell(z));
+      xPut(w4,row,3,p.qty,S2.cell(Object.assign({},z,{right:true,fmt:S2.N0})));xPut(w4,row,4,xr2(p.amt),S2.cell(Object.assign({},z,{right:true,fmt:S2.M,bold:true,color:'8A6410'})))});
+    const tr=P.length+1,tb2={bold:true,fill:'FFF1B8',color:'7A5A0C',line:'E9D89A'};xPut(w4,tr,0,L.xTot,S2.cell(Object.assign({},tb2,{indent:1})));xPut(w4,tr,1,'',S2.cell(tb2));xPut(w4,tr,2,L.pendShort(f2(tot.unsetRev)),S2.cell(tb2));
+    xPut(w4,tr,3,P.reduce((s,p)=>s+p.qty,0),S2.cell(Object.assign({},tb2,{right:true,fmt:S2.N0})));xPut(w4,tr,4,xr2(tot.unsetRev),S2.cell(Object.assign({},tb2,{right:true,fmt:S2.M})));
+    xRef(w4,P.length+2,5);w4['!rows']=[{hpt:28}];w4['!autofilter']={ref:'A1:E'+(P.length+1)};w4['!cols']=[{wch:22},{wch:18},{wch:36},{wch:8},{wch:13}];
+    XLSX.utils.book_append_sheet(wb,w4,L.pendSheet)}
   /* ---- hidden data sheet so the file can be re-imported ---- */
-  try{const js=JSON.stringify({lumen:1,v:1,plat:S.plat,files:S.files,over:S.over,name:(S.setId&&(Saves.list.find(s=>s.id===S.setId)||{}).name)||'',data:pack(S.src)});const cells=[['LUMEN_DATA_V1']];for(let i=0;i<js.length;i+=30000)cells.push([js.slice(i,i+30000)]);
+  try{const js=JSON.stringify({lumen:1,v:1,plat:S.plat,month:S.month||'',files:S.files,over:S.over,name:(S.setId&&(Saves.list.find(s=>s.id===S.setId)||{}).name)||'',data:pack(S.src)});const cells=[['LUMEN_DATA_V1']];for(let i=0;i<js.length;i+=30000)cells.push([js.slice(i,i+30000)]);
     XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(cells),'_lumen');wb.Workbook={Sheets:wb.SheetNames.map(n=>({Hidden:n==='_lumen'?1:0}))}}catch(e){}
   let out=XLSX.write(wb,{bookType:'xlsx',type:'array'});
-  out=xFinish(out,[{y:8,outline:true,collapsed},{y:1},{y:1},null]);
+  out=xFinish(out,[{y:8,outline:true,collapsed},{y:1},{y:1},{y:1},null]);
   const name=(lang==='zh'?'Lumen_营销报告_':'Lumen_Marketing_')+(tk?'TikTok_':'Shopee_')+(R.daily.length?R.daily[0].day+'_'+R.daily[R.daily.length-1].day:'report')+'.xlsx';
   await saveBlob(out,name,L.expOk)}
 
@@ -1433,7 +1500,7 @@ async function exportTotal(){const L=t();if(!anyRes())return;const S2=XS,a=platT
     xPut(w2,row,8,Math.round(p.margin*1000)/1000,S2.cell(Object.assign({},zb,{right:true,fmt:S2.P,color:xsign(p.margin)})))});
   xRef(w2,P.length+1,9);w2['!rows']=[{hpt:30}];w2['!autofilter']={ref:'A1:I'+(P.length+1)};w2['!cols']=[{wch:10},{wch:44},{wch:14},{wch:14},{wch:14},{wch:14},{wch:13},{wch:13},{wch:9}];
   XLSX.utils.book_append_sheet(wb,w2,L.xProdSheet);
-  try{const js=JSON.stringify({lumen:1,v:1,plat:S.plat,files:S.files,over:S.over,name:'',data:pack(S.src)});const cells=[['LUMEN_DATA_V1']];for(let i=0;i<js.length;i+=30000)cells.push([js.slice(i,i+30000)]);
+  try{const js=JSON.stringify({lumen:1,v:1,plat:S.plat,month:S.month||'',files:S.files,over:S.over,name:'',data:pack(S.src)});const cells=[['LUMEN_DATA_V1']];for(let i=0;i<js.length;i+=30000)cells.push([js.slice(i,i+30000)]);
     XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(cells),'_lumen');wb.Workbook={Sheets:wb.SheetNames.map(n=>({Hidden:n==='_lumen'?1:0}))}}catch(e){}
   const out=xFinish(XLSX.write(wb,{bookType:'xlsx',type:'array'}),[{y:4},{y:1},null]);
   await saveBlob(out,(lang==='zh'?'Lumen_总汇总_':'Lumen_Total_')+per.replace(/ – /,'_')+'.xlsx',L.expOk)}
@@ -1444,6 +1511,8 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-plat],[dat
   if(b.dataset.plat){const p=b.dataset.plat,v=view();if(p==='total'){if(anyRes())location.hash='total';return}setPlat(p);S.open={};S.q='';S.filter='all';
     if(b.tagName==='A')return;if(v==='upload'||!S.res){if(location.hash!=='#upload')location.hash='upload';else render()}else if(v==='total'){location.hash='overview'}else{S.last='';render()}return}
   if(b.dataset.act==='exptotal'){exportTotal();return}
+  if(b.dataset.act==='pendall'){S.pendAll=1;S.last='';render();return}
+  if(b.dataset.act==='pend'){e.preventDefault();S.pendScroll=1;if(location.hash!=='#insights')location.hash='insights';else{render()}return}
   if(b.dataset.act==='mclose'){closeModal();return}
   if(b.dataset.act==='build'){buildReport();return}
   if(b.dataset.goflt){S.filter=b.dataset.goflt;S.cf='all';return}
@@ -1470,7 +1539,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-plat],[dat
   else if(b.dataset.open){S.open[b.dataset.open]=true}
   else if(b.dataset.clear){delete S.over[b.dataset.clear];store.set('costs',S.over);recompute();render();toast(t().saved)}});
 document.addEventListener('input',e=>{if(e.target.id==='q'){S.q=e.target.value;render()}else if(e.target.id==='cq'){S.cq=e.target.value;render()}});
-document.addEventListener('change',e=>{const k=e.target.dataset&&e.target.dataset.cost;if(k==null)return;const v=e.target.value.trim();if(v===''||isNaN(parseFloat(v)))return;S.over[k]=parseFloat(v);S.editKey=null;store.set('costs',S.over);recompute();render();toast(t().saved)});
+document.addEventListener('change',e=>{if(e.target.dataset&&e.target.dataset.month!=null){S.month=e.target.value;S.open={};recompute();S.last='';render();return}const k=e.target.dataset&&e.target.dataset.cost;if(k==null)return;const v=e.target.value.trim();if(v===''||isNaN(parseFloat(v)))return;S.over[k]=parseFloat(v);S.editKey=null;store.set('costs',S.over);recompute();render();toast(t().saved)});
 $('#file').addEventListener('change',e=>{addFiles([...e.target.files]);e.target.value=''});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&S.editKey&&e.target.id==='edc'){S.editKey=null;render();return}if(e.key!=='Enter')return;if(e.target.dataset&&e.target.dataset.cost!=null){e.target.blur();return}if(e.target.id==='sname'){e.preventDefault();doSave(!!(S.setId&&Saves.list.find(s=>s.id===S.setId)))}else if(e.target.id==='rname'){const b=$('[data-dorename]');if(b)b.click()}});
 window.addEventListener('hashchange',()=>{render();toTop()});
