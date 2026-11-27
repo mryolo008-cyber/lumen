@@ -489,20 +489,24 @@ var LumenEngine = (function () {
   }
 
   function costTable(K) {
-    var costExact = {}, costItem = {};
+    var costExact = {}, costItem = {}, packs = {};
     (K || []).forEach(function (r) {
       var item = clean(r['Item']); if (!item || !r['Group'] && r['Group'] !== undefined && r['Ref. Cost'] == null) return;
       var raw = r['Ref. Cost'] !== undefined ? r['Ref. Cost'] : (r.__row ? r.__row[3] : undefined);
       if (raw === undefined || raw === null || raw === '') return;
       var key = skuKey(item); costExact[key] = num(raw); costItem[key] = item;
+      var mk = key.split(' ')[0]; if (key !== mk && /\d+\s*PCS/.test(key)) packs[mk] = 1;
     });
-    return { exact: costExact, item: costItem };
+    return { exact: costExact, item: costItem, packs: packs };
   }
+  // a pack size (e.g. "100PCS") whose parent also has its own pack-size rows, or a bundle ("H16 + H13"),
+  // must not borrow the parent's single-unit cost — leave it missing so the user enters it.
+  function packMismatch(key, master, ct) { return /\+/.test(key) || (ct.packs && ct.packs[master] && /\d+\s*PCS/.test(key)); }
   function assignCost(l, ct, overrides) {
     var key = skuKey(l.sku), uc = null, src = 'none', item = '';
     if (overrides[key] != null && overrides[key] !== '') { uc = num(overrides[key]); src = 'manual'; }
     else if (ct.exact[key] != null) { uc = ct.exact[key]; src = 'exact'; item = ct.item[key]; }
-    else if (ct.exact[l.master] != null) { uc = ct.exact[l.master]; src = 'parent'; item = ct.item[l.master]; }
+    else if (ct.exact[l.master] != null && !packMismatch(key, l.master, ct)) { uc = ct.exact[l.master]; src = 'parent'; item = ct.item[l.master]; }
     l.uc = uc; l.csrc = src; l.citem = item;
     l.cost = uc == null ? 0 : uc * l.qty;
     l.net2 = l.net - l.cost;
@@ -613,7 +617,7 @@ var LumenEngine = (function () {
       var key = skuKey(l.sku), uc = null, src = 'none', item = '';
       if (overrides[key] != null && overrides[key] !== '') { uc = num(overrides[key]); src = 'manual'; }
       else if (costExact[key] != null) { uc = costExact[key]; src = 'exact'; item = costItem[key]; }
-      else if (costExact[l.master] != null) { uc = costExact[l.master]; src = 'parent'; item = costItem[l.master]; }
+      else if (costExact[l.master] != null && !packMismatch(key, l.master, ct)) { uc = costExact[l.master]; src = 'parent'; item = costItem[l.master]; }
       l.uc = uc; l.csrc = src; l.citem = item;
       l.cost = uc == null ? 0 : uc * l.qty;
       l.net2 = l.net - l.cost;
