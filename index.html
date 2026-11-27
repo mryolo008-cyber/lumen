@@ -419,6 +419,11 @@ html,body{caret-color:transparent}
 input,textarea,select,[contenteditable="true"]{caret-color:auto}
 .side,.top,.kpi,.dc,.donut,.ring,.br,.bridge,.alloc,.dstats,.tp,.chk,.ii,.pseg,.sseg,.msel,.nav,.btn,.tag,.chip-s,.badge,.hs,.hsl,.ld,.dz,.tpc,.tsb,.tsl,.legend,svg,thead,th{-webkit-user-select:none;user-select:none}
 a.brand{text-decoration:none;color:inherit;cursor:pointer;border-radius:12px;transition:opacity .2s}a.brand:hover{opacity:.82}a.brand:hover .logo{transform:rotate(-6deg) scale(1.05)}a.brand .logo{transition:transform .25s}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.paycard{display:block;width:100%;text-align:left;font:inherit;color:inherit;cursor:pointer;transition:transform .2s,box-shadow .2s,border-color .2s}
+.paycard:hover{transform:translateY(-2px)}.paycard.on{box-shadow:0 0 0 1px color-mix(in srgb,var(--pc) 55%,transparent) inset,0 18px 40px -24px var(--pc)}
+.paycard .v{font-size:34px;margin-top:14px}.paycard .s{margin-top:8px}
+@media (max-width:760px){.grid2{grid-template-columns:minmax(0,1fr)}}
 </style>
 </head>
 <body>
@@ -678,11 +683,12 @@ var LumenEngine = (function () {
     var exOrders = {}; if (month) lines = lines.filter(function (l) { if (monthOf(l.done) === month) return true; exOrders[l.oid] = 1; return false; });
     lines.sort(function (a, b) { return a.done < b.done ? -1 : a.done > b.done ? 1 : (a.oid < b.oid ? -1 : a.oid > b.oid ? 1 : 0); });
     var osum = {}, ocnt = {}; lines.forEach(function (l) { osum[l.oid] = (osum[l.oid] || 0) + l.gross; ocnt[l.oid] = (ocnt[l.oid] || 0) + 1; });
-    var feeOrders = 0, seen = {}, unsetOrders = {}, refund = 0, subIncome = 0;
+    var feeOrders = 0, seen = {}, unsetOrders = {}, refund = 0, subIncome = 0, paid = [], paidIx = {};
     lines.forEach(function (l) {
       var o = inc[l.oid], sh = osum[l.oid] > 0 ? l.gross / osum[l.oid] : 1 / ocnt[l.oid];
       if (o) {
-        if (!seen[l.oid]) { seen[l.oid] = 1; feeOrders += o.total; refund += o.sub - o.rev; subIncome += o.sub; }
+        if (!seen[l.oid]) { seen[l.oid] = 1; feeOrders += o.total; refund += o.sub - o.rev; subIncome += o.sub; paid.push({ oid: l.oid, done: l.done, settled: o.settled, rev: o.rev, fees: o.total, settle: o.settle, skus: [] }); paidIx[l.oid] = paid[paid.length - 1]; }
+        if (paidIx[l.oid].skus.indexOf(l.sku) < 0) paidIx[l.oid].skus.push(l.sku);
         l.amt = o.sub ? l.gross * (o.rev / o.sub) : l.gross * 0; if (!o.sub) l.amt = 0;
         l.refund = l.gross - l.amt;
         l.anA = o.tf * sh; l.aoA = o.cm * sh; l.apA = o.sv * sh; l.shA = o.sh * sh; l.ai = o.af * sh; l.u = o.ad * sh; l.unset = false;
@@ -706,6 +712,7 @@ var LumenEngine = (function () {
     F.plat = 'tiktok';
     F.ads = [];
     F.month = month || ''; F.excluded = Object.keys(exOrders).length;
+    F.paid = paid; tot.paidOrders = paid.length; tot.paidAmt = paid.reduce(function (s, p) { return s + p.settle; }, 0); tot.reimb = reimb;
     F.checks = { tt: true, incomeOrders: incOrders, matched: Object.keys(seen).length, orders: tot.orders, unsetOrders: tot.unsetOrders, unsetRev: tot.unsetRev,
       feeOrders: feeOrders, feeAllocated: lines.reduce(function (s, l) { return s + l.fees + l.ai + l.u; }, 0), refund: refund, subIncome: subIncome,
       shopAds: shopAds, gmv: gmv, reimb: reimb, costItems: Object.keys(ct.exact).length };
@@ -867,8 +874,8 @@ async function addFiles(list){const bad=[],L=t();if(!list.length)return;
   S.last='';if(location.hash!=='#upload')location.hash='upload';else render()}
 async function buildReport(){const L=t();showLoader(L.ldBuild,L.ldStepsBuild);ldStep(0,30);await tick();await new Promise(r=>setTimeout(r,250));ldStep(1,70);await tick();await finishLoader(1100);S.last='';location.hash='overview'}
 
-const views=['upload','saved','overview','skus','insights','costs','total'];
-const APPV=['overview','skus','insights','costs','total'];
+const views=['upload','saved','overview','skus','insights','costs','payout','total'];
+const APPV=['overview','skus','insights','costs','payout','total'];
 function view(){const h=location.hash.slice(1);if(h==='saved')return 'upload';if(h==='total')return anyRes()?'total':'upload';if(views.includes(h))return (!anyRes()&&APPV.includes(h))?'upload':h;return anyRes()?'overview':'upload'}
 function period(){if(S.month&&anyRes())return monthRange(S.month);if(location.hash==='#total')return totalPeriod();const R=S.res;return R&&R.daily.length?`${R.daily[0].day} – ${R.daily[R.daily.length-1].day}`:''}
 function top(title,extra){const L=t(),p=period();
@@ -964,7 +971,7 @@ function vInsights(){const L=t(),R=S.res;if(!R)return empty();const I=R.insights
     miss:['#F4C45A','var(--warnbg)','costs',L.iMiss,L.iMissS,L.iMissA,[L.cLines,L.hRev,L.hUnits],I.missing.map(s=>[s.sku,'',f0(s.lines),f2(s.rev),f0(s.units),0])]};
   const go={loss:'#skus',ads:'#skus',thin:'#skus',miss:'#costs'},flt={loss:'loss',ads:'all',thin:'all',miss:'miss'};
   const list=Object.keys(defs).map((k,i)=>{const d=defs[k];return `<a class="ii" href="${go[k]}" data-goflt="${flt[k]}" style="--i:${i}"><span class="dot" style="width:44px;height:44px;border-radius:13px;background:${d[1]}">${ic(d[2],20,d[0],2)}</span><span style="flex:1;min-width:0"><b style="display:block;font-weight:600;font-size:15px">${esc(d[3])}</b><span class="ds">${esc(d[4])}</span></span><span class="cnt" style="color:${d[7].length?d[0]:'var(--dim)'}">${d[7].length}</span><span class="dim" style="flex:none">${ic('chev',16)}</span></a>`}).join('');
-  return `<div style="display:flex;flex-direction:column;gap:12px">${list}</div>${pendingSec(R)}`}
+  return `<div style="display:flex;flex-direction:column;gap:12px">${list}</div>`}
 function vCosts(){const L=t(),R=S.res;if(!R)return empty();const tt=R.tot,n=tt.skuCount||1,cov=(n-tt.missingSkus)/n;
   const miss=R.skus.filter(s=>s.uc==null).sort((a,b)=>b.rev-a.rev);
   const mRev=miss.reduce((s,x)=>s+x.rev,0),mLines=miss.reduce((s,x)=>s+x.lines,0),mMax=Math.max(...miss.map(x=>x.rev),1);
@@ -1060,15 +1067,15 @@ function animate(m){m.classList.remove('anim');void m.offsetWidth;m.classList.ad
   m.querySelectorAll('[data-count]').forEach(el=>{const to=+el.dataset.count,t0=performance.now(),D=1100;const step=now=>{const p=Math.min(1,(now-t0)/D),e=1-Math.pow(1-p,4);el.textContent=f2(to*e);if(p<1)requestAnimationFrame(step);else el.textContent=f2(to)};requestAnimationFrame(step)});
   clearTimeout(animate.t);animate.t=setTimeout(()=>m.classList.remove('anim'),2600)}
 function render(){const L=t(),v=view();document.documentElement.lang=lang==='zh'?'zh':'en';
-  const R=S.res,badge={saved:Saves.list.length,insights:R?R.insights.loss.length+R.insights.adHeavy.length+(R.tot.unsetOrders?1:0):0,costs:R?R.tot.missingSkus:0};
+  const R=S.res,badge={saved:Saves.list.length,insights:R?R.insights.loss.length+R.insights.adHeavy.length:0,payout:R&&R.tot.unsetOrders?R.tot.unsetOrders:0,costs:R?R.tot.missingSkus:0};
   const appMode=APPV.includes(v)&&anyRes();document.body.classList.toggle('start',!appMode);
-  $('#nav').innerHTML=!appMode?'':sidePlat(v)+`<div class="sect">${esc(L.sect)}</div>`+APPV.filter(k=>k!=='total').map(k=>`<a class="nav ${v===k?'on':''}" href="#${k}">${ic(k,18)}<span>${esc(L[k])}</span>${badge[k]?`<span class="badge ${k==='saved'?'b2':''}">${badge[k]}</span>`:''}</a>`).join('')+`<div class="sect">${esc(L.pTotal)}</div><a class="nav ${v==='total'?'on':''}" href="#total">${ic('layers',18)}<span>${esc(L.totT)}</span></a>`;
+  $('#nav').innerHTML=!appMode?'':sidePlat(v)+`<div class="sect">${esc(L.sect)}</div>`+APPV.filter(k=>k!=='total'&&(k!=='payout'||S.plat==='tiktok')).map(k=>`<a class="nav ${v===k?'on':''}" href="#${k}">${ic(k,18)}<span>${esc(L[k])}</span>${badge[k]?`<span class="badge ${k==='saved'?'b2':''}">${badge[k]}</span>`:''}</a>`).join('')+`<div class="sect">${esc(L.pTotal)}</div><a class="nav ${v==='total'?'on':''}" href="#total">${ic('layers',18)}<span>${esc(L.totT)}</span></a>`;
   const n=KINDS.filter(k=>S.files[k]).length;
   const cur=S.setId&&Saves.list.find(s=>s.id===S.setId);
   $('#shop').innerHTML=appMode?`<span class="splat" style="color:${PLC[v==='total'?'total':S.plat][0]}">${esc(v==='total'?L.pTotal:(S.plat==='tiktok'?L.pTiktok:L.pShopee))}</span><b>${esc(cur?cur.name:(v==='total'?L.pTotalS:L.files(n)))}</b>${period()?`<span class="num">${esc(period())}</span>`:''}${v==='total'?'':`<div class="bar">${KINDS.map(k=>`<i class="${S.files[k]?'on':''}"></i>`).join('')}</div>`}<div class="srow"><span class="dim">${esc(L.langL)}</span>${langBtn()}</div>`:`<b>${esc(L.privT)}</b><span>${esc(L.privS)}</span>`;
-  const title=v==='total'?L.totT:({upload:L.uTitle,saved:L.savedT,overview:L.overview,skus:L.skus,insights:L.insights,costs:L.costT}[v]+(appMode?` · ${S.plat==='tiktok'?L.pTiktok:L.pShopee}`:''));
+  const title=v==='total'?L.totT:({upload:L.uTitle,saved:L.savedT,overview:L.overview,skus:L.skus,insights:L.insights,costs:L.costT,payout:L.payout}[v]+(appMode?` · ${S.plat==='tiktok'?L.pTiktok:L.pShopee}`:''));
   $('#top').innerHTML=appMode?top(title,saveBtn()+(v==='total'?`<button type="button" class="btn" data-act="exptotal">${ic('dl',16)}${esc(L.export)}</button>`:(R?expBtn():''))):`<div class="tbrand"><span class="logo"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#0A0D18" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M4 18 L10 11 L14 14 L20 6"/><path d="M15 6 H20 V11"/></svg></span>Lumen <b>真利</b></div><div class="tools">${langBtn()}</div>`;
-  const fn={upload:vUpload,saved:vSaved,overview:vOverview,skus:vSkus,insights:vInsights,costs:vCosts,total:vTotal}[v];
+  const fn={upload:vUpload,saved:vSaved,overview:vOverview,skus:vSkus,insights:vInsights,costs:vCosts,payout:vPayout,total:vTotal}[v];
   const keep=document.activeElement&&document.activeElement.id;const pos=keep&&document.activeElement.selectionStart;
   const m=$('#main');const go=S.last!==v&&!matchMedia('(prefers-reduced-motion: reduce)').matches;S.last=v;
   m.innerHTML=fn();
@@ -1341,12 +1348,7 @@ Object.assign(X.zh,{pendShort:a=>`RM ${a} 未到账`,pendT:'未到账订单',pen
 Object.assign(X.en,{pendShort:a=>`RM ${a} not paid out`,pendT:'Not paid out yet',pendS:(n,a)=>`TikTok has not settled these ${n} orders yet, so RM ${a} has not reached your account and their platform fees are not deducted yet (profit reads high). Add next month's income file and they update automatically.`,
   pendAmt:'Not paid out',pendH:['Order ID','Ordered','SKU','Qty','Amount'],pendMore:n=>`Show all ${n}`,pendSheet:'Not paid out'});
 function pendingOrders(R){const o={},list=[];(R&&R.lines||[]).forEach(l=>{if(!l.unset)return;let x=o[l.oid];if(!x){x=o[l.oid]={oid:l.oid,done:l.done,skus:[],qty:0,amt:0};list.push(x)}if(!x.skus.includes(l.sku))x.skus.push(l.sku);x.qty+=l.qty;x.amt+=l.amt});return list}
-function pendingSec(R){const L=t();if(!R||!R.tot.unsetOrders)return '';const P=pendingOrders(R),show=S.pendAll?P:P.slice(0,60);
-  return `<section id="pending" class="card pend" style="margin-top:26px;scroll-margin-top:96px"><div class="hd" style="align-items:flex-start"><div style="display:flex;gap:14px;align-items:flex-start"><span class="dot" style="width:44px;height:44px;border-radius:13px;background:var(--warnbg);flex:none">${ic('clock',20,'#F4C45A',2)}</span><div><h2>${esc(L.pendT)} <span class="chip-s" style="background:var(--warnbg);color:var(--warn);margin-left:6px">${f0(P.length)}</span></h2><div class="sub" style="max-width:680px;line-height:1.6;margin-top:6px">${esc(L.pendS(f0(P.length),f2(R.tot.unsetRev)))}</div></div></div>
-    <div class="pamt"><span class="dim">${esc(L.pendAmt)}</span><b class="num">RM ${f2(R.tot.unsetRev)}</b></div></div>
-    <div class="tbl fit" style="margin-top:16px;max-height:${S.pendAll?'none':'560px'}"><table><colgroup><col style="width:24%"><col class="h2" style="width:20%"><col><col class="h3" style="width:9%"><col style="width:16%"></colgroup><thead><tr>${L.pendH.map((h,i)=>`<th class="${i===1?'h2':i===3?'h3':''}" style="text-align:${i>=3?'right':'left'}">${esc(h)}</th>`).join('')}</tr></thead>
-    <tbody>${show.map(p=>`<tr><td class="num" style="font-size:12.5px">${esc(p.oid)}</td><td class="num dim h2" style="font-size:12.5px;text-align:left">${esc(p.done)}</td><td style="text-align:left"><span class="t" title="${esc(p.skus.join(', '))}">${esc(p.skus.join(', '))}</span></td><td class="num h3" style="text-align:right">${f0(p.qty)}</td><td class="num" style="text-align:right;color:var(--warn)">${f2(p.amt)}</td></tr>`).join('')}</tbody></table></div>
-    ${P.length>show.length?`<div style="text-align:center;margin-top:14px"><button type="button" class="btn" data-act="pendall">${esc(L.pendMore(f0(P.length)))}</button></div>`:''}</section>`}
+
 
 /* ---------- a platform with no data for the chosen month ---------- */
 Object.assign(X.zh,{ndT:(p,m)=>`${m} 没有 ${p} 数据`,ndS:p=>`这个月份还没有上传 ${p} 的报表，或者报表里没有这个月的订单。`,ndOther:'有数据的月份',ndUp:p=>`上传 ${p} 报表`,ndOtherP:p=>`查看 ${p}`});
@@ -1357,6 +1359,38 @@ function noPlatData(){const L=t(),p=S.plat,pn=p==='tiktok'?L.pTiktok:L.pShopee,o
   <h2 style="font:600 22px 'Geist','Noto Sans SC'">${esc(L.ndT(pn,S.month?L.mLabel(S.month):''))}</h2><p style="max-width:440px;margin:10px auto 22px">${esc(L.ndS(pn))}</p>
   ${mine.length?`<div class="dim" style="font-size:12px;margin-bottom:10px">${esc(L.ndOther)}</div><div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:22px">${mine.map(k=>`<button type="button" class="btn" data-mgo="${k}">${ic('cal',15)}${esc(L.mLabel(k))}<span class="dim num" style="font-size:12px">${f0(ml.all[k][p])}</span></button>`).join('')}</div>`:''}
   <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap"><a class="btn pri" href="#upload" data-plat="${p}">${ic('upload',16)}${esc(L.ndUp(pn))}</a>${otherHas?`<button type="button" class="btn" data-plat="${op}">${esc(L.ndOtherP(opn))}</button>`:''}</div></div>`}
+
+
+/* ---------- TikTok payouts: received vs not yet received ---------- */
+IC.payout=IC.clock;
+Object.assign(X.zh,{payout:'回款状态',payT:'回款状态',paidT:'已到账',paidS:(n)=>`${n} 张订单 TikTok 已结算，钱已经打进你的店铺余额`,pendT2:'未到账',pendS2:(n)=>`${n} 张订单还没结算，钱还没进账，平台费用也还没扣`,
+  payNote:'已到账金额 = income 表的结算金额（已扣平台费用、联盟和广告佣金）；未到账金额 = 订单金额（还没扣费用，实际到账会比较少）。',
+  payGmv:a=>`另外店铺广告（GMV）已从余额扣除 RM ${a}`,payReimb:a=>`平台补偿 +RM ${a}`,
+  paidH:['订单号','下单时间','结算时间','订单金额','扣费','到账金额'],payAllBtn:n=>`显示全部 ${n} 张`,payShopee:'Shopee 的完成订单报表只包含已完成的订单，回款状态请在 Shopee 后台的「我的收入」查看。',
+  payNone:'这个月份没有未到账订单',paidSheet:'已到账'});
+Object.assign(X.en,{payout:'Payouts',payT:'Payouts',paidT:'Received',paidS:(n)=>`${n} orders settled by TikTok — the money is in your shop balance`,pendT2:'Not received',pendS2:(n)=>`${n} orders not settled yet — no money in, fees not deducted yet`,
+  payNote:'Received = settlement amount in the income file (after platform fees, affiliate and ad commission). Not received = order amount (fees not deducted yet, so the payout will be lower).',
+  payGmv:a=>`Shop ads (GMV) of RM ${a} were also taken from the balance`,payReimb:a=>`platform reimbursement +RM ${a}`,
+  paidH:['Order ID','Ordered','Settled','Order amount','Fees','Received'],payAllBtn:n=>`Show all ${n}`,payShopee:'The Shopee completed-orders report only contains completed orders — check payouts under My Income in Shopee Seller Centre.',
+  payNone:'No unpaid orders this month',paidSheet:'Received'});
+function vPayout(){const L=t(),R=S.res;if(!R)return empty();
+  if(R.plat!=='tiktok')return `<div class="card empty"><div class="upi">${ic('clock',26,'#B9C3FF')}</div><h2 style="font:600 20px 'Geist','Noto Sans SC'">${esc(L.payT)}</h2><p style="max-width:460px;margin:10px auto 0">${esc(L.payShopee)}</p></div>`;
+  const tt=R.tot,P=pendingOrders(R),paid=R.paid||[],tab=S.payTab==='paid'||!P.length?'paid':'pend';
+  const card=(k,c,bg,icn,label,amt,n,sub)=>`<button type="button" class="card kpi paycard ${tab===k?'on':''}" data-pay="${k}" style="--pc:${c};--pb:${bg}"><div class="l"><span class="ico" style="background:var(--pb)">${ic(icn,16,c,2.2)}</span>${esc(label)}<span class="chip-s" style="margin-left:auto;background:var(--pb);color:${c}">${f0(n)} ${lang==='zh'?'单':'orders'}</span></div><div class="v num" style="color:${c}"><small>RM</small><span data-count="${amt}">${f2(amt)}</span></div><div class="s">${esc(sub)}</div></button>`;
+  const cards=`<div class="grid2">${card('paid','#52E0A6','var(--posbg)','check',L.paidT,tt.paidAmt||0,paid.length,L.paidS(f0(paid.length)))}${card('pend','#F4C45A','var(--warnbg)','clock',L.pendT2,tt.unsetRev||0,P.length,L.pendS2(f0(P.length)))}</div>`;
+  const notes=[L.payNote,tt.shopAds?L.payGmv(f2(tt.shopAds)):'',tt.reimb?L.payReimb(f2(tt.reimb)):''].filter(Boolean);
+  const lim=S.payAll?1e9:80;let table='';
+  if(tab==='paid'){const rows=paid.slice().sort((a,b)=>a.settled<b.settled?1:-1),show=rows.slice(0,lim);
+    table=`<div class="tbl fit" style="margin-top:14px;max-height:${S.payAll?'none':'620px'}"><table><colgroup><col style="width:22%"><col class="h2" style="width:17%"><col class="h3" style="width:14%"><col style="width:15%"><col class="h2" style="width:14%"><col style="width:16%"></colgroup><thead><tr>${L.paidH.map((h,i)=>`<th class="${i===1||i===4?'h2':i===2?'h3':''}" style="text-align:${i>=3?'right':'left'}">${esc(h)}</th>`).join('')}</tr></thead>
+    <tbody>${show.map(p=>`<tr><td class="num" style="font-size:12.5px;text-align:left" title="${esc(p.skus.join(', '))}">${esc(p.oid)}</td><td class="num dim h2" style="font-size:12.5px;text-align:left">${esc(p.done)}</td><td class="num h3" style="font-size:12.5px;text-align:left">${esc(p.settled)}</td><td class="num" style="text-align:right">${f2(p.rev)}</td><td class="num neg h2" style="text-align:right">−${f2(p.fees)}</td><td class="num" style="text-align:right;color:var(--pos);font-weight:600">${f2(p.settle)}</td></tr>`).join('')}</tbody></table></div>
+    ${rows.length>show.length?`<div style="text-align:center;margin-top:14px"><button type="button" class="btn" data-act="payall">${esc(L.payAllBtn(f0(rows.length)))}</button></div>`:''}`}
+  else{const show=P.slice(0,lim);
+    table=P.length?`<div class="tbl fit" style="margin-top:14px;max-height:${S.payAll?'none':'620px'}"><table><colgroup><col style="width:24%"><col class="h2" style="width:20%"><col><col class="h3" style="width:9%"><col style="width:16%"></colgroup><thead><tr>${L.pendH.map((h,i)=>`<th class="${i===1?'h2':i===3?'h3':''}" style="text-align:${i>=3?'right':'left'}">${esc(h)}</th>`).join('')}</tr></thead>
+    <tbody>${show.map(p=>`<tr><td class="num" style="font-size:12.5px;text-align:left">${esc(p.oid)}</td><td class="num dim h2" style="font-size:12.5px;text-align:left">${esc(p.done)}</td><td style="text-align:left"><span class="t" title="${esc(p.skus.join(', '))}">${esc(p.skus.join(', '))}</span></td><td class="num h3" style="text-align:right">${f0(p.qty)}</td><td class="num" style="text-align:right;color:var(--warn);font-weight:600">${f2(p.amt)}</td></tr>`).join('')}</tbody></table></div>
+    ${P.length>show.length?`<div style="text-align:center;margin-top:14px"><button type="button" class="btn" data-act="payall">${esc(L.payAllBtn(f0(P.length)))}</button></div>`:''}`:`<div class="card" style="margin-top:14px;text-align:center;color:var(--mut)">${esc(L.payNone)}</div>`}
+  return cards+`<div class="tnotes" style="margin:14px 2px 0">${notes.map(x=>`<span>${ic('alert',13,'#9AA6FF',2.2)}${esc(x)}</span>`).join('')}</div>
+  <div class="hd" style="margin:26px 0 0;align-items:flex-end"><div><h2 style="font-size:17px">${esc(tab==='paid'?L.paidT:L.pendT2)} <span class="chip-s" style="background:${tab==='paid'?'var(--posbg)':'var(--warnbg)'};color:${tab==='paid'?'var(--pos)':'var(--warn)'};margin-left:6px">${f0(tab==='paid'?paid.length:P.length)}</span></h2></div>
+  <div class="pseg" style="margin:0"><button type="button" class="${tab==='paid'?'on':''}" data-pay="paid" style="--pc:#52E0A6;--pb:var(--posbg)">${esc(L.paidT)}</button><button type="button" class="${tab==='pend'?'on':''}" data-pay="pend" style="--pc:#F4C45A;--pb:var(--warnbg)">${esc(L.pendT2)}</button></div></div>`+table}
 
 /* ---------- styled Excel exports (xlsx-js-style) ---------- */
 Object.assign(X.zh,{expOk:'营销报告已导出',xT:'Lumen 真利 · 营销报告',xPer:'期间',xGen:'生成于',xKRev:'营业额',xKNet:'真实净利',xKMg:'利润率',xKOrd:'订单',xKUnits:'销量',
@@ -1483,6 +1517,15 @@ async function exportX(){const L=t(),R=S.res;if(!R)return;const tot=R.tot,per=pe
   xRef(w3,sk.length+1,5);w3['!rows']=[{hpt:28}];w3['!autofilter']={ref:'A1:E'+(sk.length+1)};w3['!cols']=[{wch:12},{wch:32},{wch:32},{wch:12},{wch:14}];
   XLSX.utils.book_append_sheet(wb,w3,L.xCosts);
 
+  /* ---- TikTok: orders already paid out ---- */
+  if(tk&&R.paid&&R.paid.length){const P=R.paid.slice().sort((a,b)=>a.settled<b.settled?1:-1),w5={};L.paidH.forEach((h,k)=>xPut(w5,0,k,h,S2.head(k>=3)));
+    P.forEach((p,i)=>{const row=i+1,z=i%2?{fill:'F3FBF6'}:{};xPut(w5,row,0,p.oid,S2.cell(Object.assign({},z,{indent:1})));xPut(w5,row,1,p.done,S2.cell(Object.assign({},z,{color:S2.MUT})));xPut(w5,row,2,p.settled,S2.cell(z));
+      xPut(w5,row,3,xr2(p.rev),S2.cell(Object.assign({},z,{right:true,fmt:S2.M})));xPut(w5,row,4,xr2(-p.fees),S2.cell(Object.assign({},z,{right:true,fmt:S2.M,color:S2.NEG})));xPut(w5,row,5,xr2(p.settle),S2.cell(Object.assign({},z,{right:true,fmt:S2.M,bold:true,color:S2.POS})))});
+    const tr=P.length+1,tb3={bold:true,fill:'E4F5EC',color:'0F5C3B',line:'BFE3CF'};xPut(w5,tr,0,L.xTot,S2.cell(Object.assign({},tb3,{indent:1})));xPut(w5,tr,1,'',S2.cell(tb3));xPut(w5,tr,2,'',S2.cell(tb3));
+    xPut(w5,tr,3,xr2(P.reduce((s,p)=>s+p.rev,0)),S2.cell(Object.assign({},tb3,{right:true,fmt:S2.M})));xPut(w5,tr,4,xr2(-P.reduce((s,p)=>s+p.fees,0)),S2.cell(Object.assign({},tb3,{right:true,fmt:S2.M})));xPut(w5,tr,5,xr2(tot.paidAmt),S2.cell(Object.assign({},tb3,{right:true,fmt:S2.M})));
+    let nr=tr+2;[L.payNote,tot.shopAds?L.payGmv(f2(tot.shopAds)):''].filter(Boolean).forEach(x=>{xPut(w5,nr,0,'• '+x,{font:S2.f({sz:9,color:{rgb:S2.MUT}})});nr++});
+    xRef(w5,nr,6);w5['!rows']=[{hpt:28}];w5['!autofilter']={ref:'A1:F'+(P.length+1)};w5['!cols']=[{wch:22},{wch:18},{wch:18},{wch:13},{wch:12},{wch:13}];
+    XLSX.utils.book_append_sheet(wb,w5,L.paidSheet)}
   /* ---- TikTok: orders not paid out yet ---- */
   if(tk&&tot.unsetOrders){const P=pendingOrders(R),w4={};L.pendH.forEach((h,k)=>xPut(w4,0,k,h,S2.head(k>=3)));
     P.forEach((p,i)=>{const row=i+1,z=i%2?{fill:'FFFBEA'}:{};xPut(w4,row,0,p.oid,S2.cell(Object.assign({},z,{indent:1})));xPut(w4,row,1,p.done,S2.cell(Object.assign({},z,{color:S2.MUT})));xPut(w4,row,2,p.skus.join(', '),S2.cell(z));
@@ -1495,7 +1538,7 @@ async function exportX(){const L=t(),R=S.res;if(!R)return;const tot=R.tot,per=pe
   try{const js=JSON.stringify({lumen:1,v:1,plat:S.plat,month:S.month||'',files:S.files,over:S.over,name:(S.setId&&(Saves.list.find(s=>s.id===S.setId)||{}).name)||'',data:pack(S.src)});const cells=[['LUMEN_DATA_V1']];for(let i=0;i<js.length;i+=30000)cells.push([js.slice(i,i+30000)]);
     XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(cells),'_lumen');wb.Workbook={Sheets:wb.SheetNames.map(n=>({Hidden:n==='_lumen'?1:0}))}}catch(e){}
   let out=XLSX.write(wb,{bookType:'xlsx',type:'array'});
-  out=xFinish(out,[{y:8,outline:true,collapsed},{y:1},{y:1},{y:1},null]);
+  out=xFinish(out,[{y:8,outline:true,collapsed},{y:1},{y:1},{y:1},{y:1},null]);
   const name=(lang==='zh'?'Lumen_营销报告_':'Lumen_Marketing_')+(tk?'TikTok_':'Shopee_')+(R.daily.length?R.daily[0].day+'_'+R.daily[R.daily.length-1].day:'report')+'.xlsx';
   await saveBlob(out,name,L.expOk)}
 
@@ -1526,14 +1569,15 @@ async function exportTotal(){const L=t();if(!anyRes())return;const S2=XS,a=platT
   await saveBlob(out,(lang==='zh'?'Lumen_总汇总_':'Lumen_Total_')+per.replace(/ – /,'_')+'.xlsx',L.expOk)}
 
 
-document.addEventListener('click',e=>{const b=e.target.closest('[data-mgo],[data-plat],[data-goflt],[data-cf],[data-edit],[data-tmode],[data-dmode],[data-lang],[data-act],[data-tog],[data-filter],[data-ins],[data-open],[data-clear],[data-openset],[data-rename],[data-del],[data-dorename],[data-dodel]');if(!b)return;
+document.addEventListener('click',e=>{const b=e.target.closest('[data-pay],[data-mgo],[data-plat],[data-goflt],[data-cf],[data-edit],[data-tmode],[data-dmode],[data-lang],[data-act],[data-tog],[data-filter],[data-ins],[data-open],[data-clear],[data-openset],[data-rename],[data-del],[data-dorename],[data-dodel]');if(!b)return;
   if(b.dataset.act==='save'){Saves.init().then(()=>{if(!Saves.loaded)return Saves.refresh()}).catch(()=>{}).then(openSaveDialog);return}
   if(b.dataset.mgo){S.month=b.dataset.mgo;S.open={};recompute();S.last='';render();return}
   if(b.dataset.plat){const p=b.dataset.plat,v=view();if(p==='total'){if(anyRes())location.hash='total';return}setPlat(p);S.open={};S.q='';S.filter='all';
     if(b.tagName==='A')return;if(v==='upload'){render()}else if(v==='total'){location.hash='overview'}else{S.last='';render()}return}
   if(b.dataset.act==='exptotal'){exportTotal();return}
-  if(b.dataset.act==='pendall'){S.pendAll=1;S.last='';render();return}
-  if(b.dataset.act==='pend'){e.preventDefault();S.pendScroll=1;if(location.hash!=='#insights')location.hash='insights';else{render()}return}
+  if(b.dataset.act==='payall'){S.payAll=1;S.last='';render();return}
+  if(b.dataset.act==='pend'){e.preventDefault();S.payTab='pend';if(location.hash!=='#payout')location.hash='payout';else{S.last='';render()}return}
+  if(b.dataset.pay){S.payTab=b.dataset.pay;S.payAll=0;S.last='';render();return}
   if(b.dataset.act==='mclose'){closeModal();return}
   if(b.dataset.act==='build'){buildReport();return}
   if(b.dataset.goflt){S.filter=b.dataset.goflt;S.cf='all';return}
