@@ -858,10 +858,13 @@ function toast(m,ok){if(LD.el){ldNote(m,ok===false?'warn':'ok');return}
   w.innerHTML=`<div class="ldb"><div class="ldo"><span class="ldr r1"></span><span class="ldr r2"></span><span class="ldc">${bad?ic('alert',28,'#0A0D18',2.4):ic('check',28,'#0A0D18',2.6)}</span></div><b class="ldt"></b></div>`;
   w.querySelector('.ldt').textContent=m;document.body.appendChild(w);const close=()=>{if(!w.isConnected)return;w.classList.add('out');setTimeout(()=>w.remove(),400)};
   w.addEventListener('click',close);toast.t=setTimeout(close,bad?2600:1500)}
-function recompute(){ensureMonth();const M=LumenEngine.months(S.src);S.resS=S.src.orders&&M.shopee[S.month]?LumenEngine.compute(S.src,S.over,S.month):null;S.resT=S.src.tt_orders&&M.tiktok[S.month]?LumenEngine.computeTT(S.src,S.over,S.month):null;S.res=S.plat==='tiktok'?S.resT:S.resS;if(S.autoPlat){S.autoPlat=0;if(!S.res&&(S.resS||S.resT))setPlat(S.resS?'shopee':'tiktok')}}
+function recompute(){ensureMonth();const M=LumenEngine.months(S.src),mp=S.monthP||{};S.resS=S.src.orders&&M.shopee[mp.shopee]?LumenEngine.compute(S.src,S.over,mp.shopee):null;S.resT=S.src.tt_orders&&M.tiktok[mp.tiktok]?LumenEngine.computeTT(S.src,S.over,mp.tiktok):null;S.res=S.plat==='tiktok'?S.resT:S.resS;if(S.autoPlat){S.autoPlat=0;if(!S.res&&(S.resS||S.resT))setPlat(S.resS?'shopee':'tiktok')}}
 async function readFile(f){
   const buf=await f.arrayBuffer();let wb;
   if(/\.csv$/i.test(f.name)){wb=XLSX.read(new TextDecoder('utf-8').decode(buf),{type:'string',raw:true})}else{wb=XLSX.read(buf,{type:'array'})}
+  // some exports (e.g. TikTok income) declare a too-small sheet range; widen it to every cell actually present
+  wb.SheetNames.forEach(n=>{const ws=wb.Sheets[n];if(!ws)return;let r=0,c=0;for(const k in ws){if(k[0]==='!')continue;const a=XLSX.utils.decode_cell(k);if(a.r>r)r=a.r;if(a.c>c)c=a.c}
+    const cur=ws['!ref']?XLSX.utils.decode_range(ws['!ref']):{s:{r:0,c:0},e:{r:0,c:0}};if(r>cur.e.r||c>cur.e.c)ws['!ref']=XLSX.utils.encode_range({s:cur.s,e:{r:Math.max(r,cur.e.r),c:Math.max(c,cur.e.c)}})});
   if(!/\.csv$/i.test(f.name)){const lu=lumenImport(wb,f.name);if(lu)return {lumen:lu}}
   for(const n of wb.SheetNames){const rows=XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,raw:true,defval:''});const d=LumenEngine.detect(rows);if(d)return{kind:d.kind,rows:LumenEngine.objects(rows,d.header)}}
   return null}
@@ -876,9 +879,10 @@ function hideLoader(now){const w=LD.el||$('#ld');LD.el=null;if(!w)return;if(now)
 const tick=()=>new Promise(r=>requestAnimationFrame(()=>setTimeout(r,0)));
 async function addFiles(list){const bad=[],L=t();if(!list.length)return;
   showLoader(L.ldRead(list.length),L.ldStepsRead);await tick();
-  S.setId=null;S.month='';S.autoPlat=1;let i=0;const plats={};let addedInc=0;for(const f of list){try{ldStep(0,8+i/list.length*62);await tick();const r=await readFile(f);if(r&&r.lumen){await restoreLumen(r.lumen,f.name);return}if(!r){bad.push(f.name)}else{const pk=platOf(r.kind);if(pk)plats[pk]=1;if(r.kind==='tt_income'&&S.src.tt_income&&addedInc){S.src.tt_income=S.src.tt_income.concat(r.rows);S.files.tt_income={name:S.files.tt_income.name+' + '+f.name,n:S.files.tt_income.n+r.rows.length}}else{S.src[r.kind]=r.rows;S.files[r.kind]={name:f.name,n:r.rows.length}}if(r.kind==='tt_income')addedInc=1}}catch(e){bad.push(f.name)}i++}
-  const pl=Object.keys(plats);if(pl.length===1)setPlat(pl[0]);
-  ldStep(1,78);await tick();recompute();ldStep(2,92);if(bad.length)ldNote(L.unknown+bad.join(', '),'warn');await finishLoader(bad.length?2600:900);
+  S.setId=null;let i=0;const plats={};let addedInc=0;for(const f of list){try{ldStep(0,8+i/list.length*62);await tick();const r=await readFile(f);if(r&&r.lumen){await restoreLumen(r.lumen,f.name);return}if(!r){bad.push(f.name)}else{const pk=platOf(r.kind);if(pk)plats[pk]=1;if(r.kind==='tt_income'&&S.src.tt_income&&addedInc){S.src.tt_income=S.src.tt_income.concat(r.rows);S.files.tt_income={name:S.files.tt_income.name+' + '+f.name,n:S.files.tt_income.n+r.rows.length}}else{S.src[r.kind]=r.rows;S.files[r.kind]={name:f.name,n:r.rows.length}}if(r.kind==='tt_income')addedInc=1}}catch(e){bad.push(f.name)}i++}
+  const pl=Object.keys(plats);if(pl.length)setPlat(pl.includes(S.plat)?S.plat:pl[0]);pickMonth(S.plat);
+  ldStep(1,78);await tick();recompute();ldStep(2,92);const got=pl.map(p=>L.storedIn(p==='tiktok'?L.pTiktok:L.pShopee)).join(' · ');
+  if(bad.length)ldNote(L.unknown+bad.join(', '),'warn');else if(got)ldNote(got,'ok');await finishLoader(bad.length?2600:1100);
   S.last='';if(location.hash!=='#upload')location.hash='upload';else render()}
 async function buildReport(){const L=t();showLoader(L.ldBuild,L.ldStepsBuild);ldStep(0,30);await tick();await new Promise(r=>setTimeout(r,250));ldStep(1,70);await tick();await finishLoader(1100);S.last='';location.hash='overview'}
 
@@ -1074,7 +1078,7 @@ function animate(m){m.classList.remove('anim');void m.offsetWidth;m.classList.ad
   m.querySelectorAll('.card,.ii,.tbl,.banner,.slot').forEach((e,i)=>e.style.setProperty('--i',Math.min(i,10)));
   m.querySelectorAll('[data-count]').forEach(el=>{const to=+el.dataset.count,t0=performance.now(),D=1100;const step=now=>{const p=Math.min(1,(now-t0)/D),e=1-Math.pow(1-p,4);el.textContent=f2(to*e);if(p<1)requestAnimationFrame(step);else el.textContent=f2(to)};requestAnimationFrame(step)});
   clearTimeout(animate.t);animate.t=setTimeout(()=>m.classList.remove('anim'),2600)}
-function render(){const L=t(),v=view();document.documentElement.lang=lang==='zh'?'zh':'en';
+function render(){const L=t(),v=view();if(v==='total')alignTotal();document.documentElement.lang=lang==='zh'?'zh':'en';
   const R=S.res,badge={saved:Saves.list.length,insights:R?R.insights.loss.length+R.insights.adHeavy.length:0,payout:R&&R.tot.unsetOrders?R.tot.unsetOrders:0,costs:R?R.tot.missingSkus:0};
   const appMode=APPV.includes(v)&&anyRes();document.body.classList.toggle('start',!appMode);
   $('#nav').innerHTML=!appMode?'':sidePlat(v)+`<div class="sect">${esc(L.sect)}</div>`+APPV.filter(k=>k!=='total'&&(k!=='payout'||S.plat==='tiktok')).map(k=>`<a class="nav ${v===k?'on':''}" href="#${k}">${ic(k,18)}<span>${esc(L[k])}</span>${badge[k]?`<span class="badge ${k==='saved'?'b2':''}">${badge[k]}</span>`:''}</a>`).join('')+`<div class="sect">${esc(L.pTotal)}</div><a class="nav ${v==='total'?'on':''}" href="#total">${ic('layers',18)}<span>${esc(L.totT)}</span></a>`;
@@ -1165,12 +1169,12 @@ function openSaveDialog(){const L=t(),R=S.res||S.resS||S.resT;if(!R)return;const
   <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:22px;flex-wrap:wrap"><button type="button" class="btn" data-act="mclose">${esc(L.cancel)}</button>${cur?`<button type="button" class="btn" data-act="dosave-new">${esc(L.saveAsNew)}</button><button type="button" class="btn pri" data-act="dosave-upd">${esc(L.saveUpdate)}</button>`:`<button type="button" class="btn pri" data-act="dosave-new">${esc(L.saveBtn)}</button>`}</div>`)}
 async function doSave(update){const L=t(),R=S.res||S.resS||S.resT;const name=(($('#sname')||{}).value||'').trim()||period()||L.untitled;
   const btns=document.querySelectorAll('#modal .btn');btns.forEach(b=>b.disabled=true);
-  try{const meta={name,period:period(),files:S.files,over:S.over,month:S.month||'',summary:(()=>{const z=combinedTot();return {rev:z.rev,net2:z.net2,orders:z.orders,margin:z.margin,missing:z.miss}})()};
+  try{const meta={name,period:period(),files:S.files,over:S.over,month:S.month||'',monthP:Object.assign({},S.monthP||{}),summary:(()=>{const z=combinedTot();return {rev:z.rev,net2:z.net2,orders:z.orders,margin:z.margin,missing:z.miss}})()};
     const id=await Saves.save(meta,JSON.stringify(pack(S.src)),update?S.setId:null);S.setId=id;closeModal();toast(L.savedOk(name));render()}
   catch(e){btns.forEach(b=>b.disabled=false);toast(e&&e.code==='quota_exceeded'?L.saveFull:L.saveFail,false)}}
 async function openSet(id){const L=t(),nm=(Saves.list.find(x=>x.id===id)||{}).name||'';showLoader(L.ldOpen(nm),L.ldStepsOpen);
   try{ldStep(0,15);const {meta,data}=await Saves.load(id);ldStep(1,55);await tick();S.src=unpack(data);S.files=meta.files||{};if(meta.over)S.over=Object.assign({},S.over,meta.over);store.set('costs',S.over);
-    S.setId=id;S.open={};S.q='';S.month=meta.month||'';S.autoPlat=1;ldStep(2,80);await tick();recompute();if(!S.res)setPlat(S.resS?'shopee':'tiktok');ldNote(L.openedOk(meta.name),'ok');await finishLoader(1700);S.last='';if(location.hash!=='#overview')location.hash='overview';else render()}
+    S.setId=id;S.open={};S.q='';S.monthP=Object.assign({},meta.monthP||{});if(meta.month&&!meta.monthP)S.monthP.shopee=S.monthP.tiktok=meta.month;S.month=meta.month||'';S.autoPlat=1;ldStep(2,80);await tick();recompute();if(!S.res)setPlat(S.resS?'shopee':'tiktok');ldNote(L.openedOk(meta.name),'ok');await finishLoader(1700);S.last='';if(location.hash!=='#overview')location.hash='overview';else render()}
   catch(e){if(LD.el)LD.el.classList.add('err');ldNote(L.openFail,'bad');await new Promise(z=>setTimeout(z,2600));hideLoader()}}
 function vSaved(){const L=t();
   if(!Saves.loaded){Saves.refresh().then(render).catch(()=>{Saves.loaded=true;render()});return `<div class="card empty">${esc(L.loading)}</div>`}
@@ -1223,9 +1227,9 @@ function ldNote(x,kind){if(!LD.el)return;let n=LD.el.querySelector('.ldn');if(!n
   n.className='ldn '+(kind||'ok');n.innerHTML=(kind==='warn'||kind==='bad'?ic('alert',15,kind==='bad'?'#FF9B82':'#F4C45A',2.2):ic('check',15,'#63E8B0',2.4))+'<span></span>';n.querySelector('span').textContent=x}
 async function restoreLumen(r,fname){const L=t();ldTitle(L.impT,L.impSteps);ldStep(0,40);await tick();
   if(r.bad){LD.el&&LD.el.classList.add('err');ldNote(L.impBad,'bad');await new Promise(z=>setTimeout(z,2600));hideLoader();return}
-  S.src=r.src;S.files=r.files;S.over=Object.assign({},r.over);store.set('costs',S.over);S.setId=null;S.open={};S.q='';setPlat(r.plat||(S.src.orders?'shopee':(S.src.tt_orders?'tiktok':'shopee')));S.month=r.month||'';S.autoPlat=1;
+  Object.keys(r.src).forEach(k=>{S.src[k]=r.src[k];if(r.files[k])S.files[k]=r.files[k]});S.over=Object.assign({},S.over,r.over);store.set('costs',S.over);S.setId=null;S.open={};S.q='';setPlat(r.plat||(r.src.orders?'shopee':(r.src.tt_orders?'tiktok':'shopee')));S.monthP=S.monthP||{};if(r.month)S.monthP[S.plat]=r.month;S.month=r.month||'';pickMonth(S.plat);
   ldStep(1,65);await tick();recompute();ldStep(2,88);ldNote(r.old?L.impOld:L.impOk,r.old?'warn':'ok');await finishLoader(r.old?2800:1700);S.last='';
-  if(location.hash!=='#overview')location.hash='overview';else render()}
+  if(location.hash!=='#upload')location.hash='upload';else render()}
 
 /* ---------- export unit costs in ITEM_COST format ---------- */
 Object.assign(X.zh,{export:'导出营销报告',expCost:'导出成本价',expCostOk:'成本价已导出',cxH:['Item','Ref. Cost','状态'],cxOrig:'成本表',cxMan:'手动填写',cxMiss:'待补成本'});
@@ -1284,7 +1288,7 @@ Object.assign(X.en,{pShopee:'Shopee',pTiktok:'TikTok',pTotal:'Total',pTotalS:'Sh
   xLegendT:'Yellow = missing cost / unsettled (fees not in yet)  ·  Click + on the left to expand variations  ·  Amounts in RM'});
 
 const PLC={shopee:['#FF7A45','rgba(255,122,69,.14)'],tiktok:['#3EE0E8','rgba(62,224,232,.13)'],total:['#B9C3FF','rgba(154,166,255,.16)']};
-function setPlat(p){if(p!=='tiktok')p='shopee';S.plat=p;KINDS=KS[p];S.res=p==='tiktok'?S.resT:S.resS;store.set('plat',p)}
+function setPlat(p){if(p!=='tiktok')p='shopee';S.plat=p;KINDS=KS[p];S.res=p==='tiktok'?S.resT:S.resS;S.monthP=S.monthP||{};if(S.monthP[p])S.month=S.monthP[p];store.set('plat',p)}
 function platOf(kind){return /^tt_/.test(kind)?'tiktok':(kind==='cost'?null:'shopee')}
 function anyRes(){return !!(S.resS||S.resT)}
 function platSeg(cur){const L=t();const has={shopee:!!S.resS,tiktok:!!S.resT,total:anyRes()};
@@ -1337,8 +1341,10 @@ Object.assign(X.en,{mLabel:m=>{const [y,mo]=m.split('-');return new Date(+y,+mo-
   mc:'One month only',noMonth:(m,p)=>`No ${p} orders in ${m}`,noMonthS:x=>`Your uploaded files cover: ${x}. Switch month above or upload this month's reports.`,mcd:(m,d1,d2,ex)=>`${X.en.mLabel(m)} 1–${monthDays(m)} · data covers day ${d1}–${d2}${ex?` · ${f0(ex)} orders from other months excluded`:''}`,mOther:n=>`${n} other month(s) in the files — switch above`});
 function monthDays(m){const [y,mo]=m.split('-').map(Number);return new Date(y,mo,0).getDate()}
 function monthList(){const M=LumenEngine.months(S.src),all={};['shopee','tiktok'].forEach(p=>Object.keys(M[p]).forEach(m=>{all[m]=all[m]||{shopee:0,tiktok:0};all[m][p]=M[p][m]}));return {all,keys:Object.keys(all).sort().reverse()}}
-function ensureMonth(){const ml=monthList();if(!ml.keys.length){S.month='';return}if(S.month&&ml.all[S.month])return;
-  let best=ml.keys[0],bn=-1;ml.keys.forEach(m=>{const n=ml.all[m].shopee+ml.all[m].tiktok;if(n>bn){bn=n;best=m}});S.month=best}
+function bestMonth(p){const ks=Object.keys(LumenEngine.months(S.src)[p]||{}).sort();return ks.length?ks[ks.length-1]:''}
+function ensureMonth(){const M=LumenEngine.months(S.src);S.monthP=S.monthP||{};['shopee','tiktok'].forEach(p=>{const mp=S.monthP[p];if(!Object.keys(M[p]).length){delete S.monthP[p];return}if(!mp||!M[p][mp]&&!(location.hash==='#total'))S.monthP[p]=bestMonth(p)});
+  S.month=S.monthP[S.plat]||S.monthP.shopee||S.monthP.tiktok||''}
+function setMonth(m){S.monthP=S.monthP||{};if(location.hash==='#total'){S.monthP.shopee=m;S.monthP.tiktok=m}else S.monthP[S.plat]=m;S.month=m}
 function monthRange(m){return m?`${m}-01 – ${m}-${String(monthDays(m)).padStart(2,'0')}`:''}
 function monthSel(big){const L=t(),ml=monthList();if(!ml.keys.length||!S.month)return '';
   const opts=ml.keys.map(m=>{const c=ml.all[m];const n=c.shopee+c.tiktok;return `<option value="${m}" ${m===S.month?'selected':''}>${esc(L.mLabel(m))} · ${esc(L.mRange(m))} · ${esc(L.mOrders(n))}</option>`}).join('');
@@ -1413,6 +1419,11 @@ function recvStrip(R){const L=t(),tt=R.tot,tk=R.plat==='tiktok';
     <div class="v num ${v<0?'neg':'pos'}"><small>RM</small><span data-count="${v}">${f2(v)}</span></div><div class="s">${esc(L.rnS)}</div></div>
     <div class="nsr"><div class="eq">${parts.map(([l,x,c,sg],i)=>`${i?`<span class="op">${sg}</span>`:''}<span class="term"><span class="dim">${esc(l)}</span><b class="num" style="color:${c}">${f2(Math.abs(x))}</b></span>`).join('')}<span class="op">=</span><span class="term res"><span class="dim">${esc(L.rnT.split(' ·')[0])}</span><b class="num ${v<0?'neg':'pos'}">${f2(v)}</b></span></div>
     ${notes.length?`<div class="tnotes" style="margin-top:12px">${notes.map(x=>`<span>${ic('alert',13,'#F4C45A',2.2)}${esc(x)}</span>`).join('')}</div>`:''}</div></section>`}
+
+Object.assign(X.zh,{storedIn:p=>`已存入 ${p}`});Object.assign(X.en,{storedIn:p=>`Saved to ${p}`});
+function pickMonth(p){S.monthP=S.monthP||{};const M=LumenEngine.months(S.src)[p]||{};if(!S.monthP[p]||!M[S.monthP[p]])S.monthP[p]=bestMonth(p);if(p===S.plat)S.month=S.monthP[p]||''}
+
+function alignTotal(){S.monthP=S.monthP||{};const a=S.monthP.shopee,b=S.monthP.tiktok;if(a&&b&&a!==b){S.monthP.shopee=S.monthP.tiktok=S.month;recompute()}}
 
 /* ---------- styled Excel exports (xlsx-js-style) ---------- */
 Object.assign(X.zh,{expOk:'营销报告已导出',xT:'Lumen 真利 · 营销报告',xPer:'期间',xGen:'生成于',xKRev:'营业额',xKNet:'真实净利',xKMg:'利润率',xKOrd:'订单',xKUnits:'销量',
@@ -1593,8 +1604,8 @@ async function exportTotal(){const L=t();if(!anyRes())return;const S2=XS,a=platT
 
 document.addEventListener('click',e=>{const b=e.target.closest('[data-pay],[data-mgo],[data-plat],[data-goflt],[data-cf],[data-edit],[data-tmode],[data-dmode],[data-lang],[data-act],[data-tog],[data-filter],[data-ins],[data-open],[data-clear],[data-openset],[data-rename],[data-del],[data-dorename],[data-dodel]');if(!b)return;
   if(b.dataset.act==='save'){Saves.init().then(()=>{if(!Saves.loaded)return Saves.refresh()}).catch(()=>{}).then(openSaveDialog);return}
-  if(b.dataset.mgo){S.month=b.dataset.mgo;S.open={};recompute();S.last='';render();return}
-  if(b.dataset.plat){const p=b.dataset.plat,v=view();if(p==='total'){if(anyRes())location.hash='total';return}setPlat(p);S.open={};S.q='';S.filter='all';
+  if(b.dataset.mgo){setMonth(b.dataset.mgo);S.open={};recompute();S.last='';render();return}
+  if(b.dataset.plat){const p=b.dataset.plat,v=view();if(p==='total'){alignTotal();if(anyRes())location.hash='total';return}setPlat(p);S.open={};S.q='';S.filter='all';
     if(b.tagName==='A')return;if(v==='upload'){render()}else if(v==='total'){location.hash='overview'}else{S.last='';render()}return}
   if(b.dataset.act==='exptotal'){exportTotal();return}
   if(b.dataset.act==='payall'){S.payAll=1;S.last='';render();return}
@@ -1626,7 +1637,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-pay],[data
   else if(b.dataset.open){S.open[b.dataset.open]=true}
   else if(b.dataset.clear){delete S.over[b.dataset.clear];store.set('costs',S.over);recompute();render();toast(t().saved)}});
 document.addEventListener('input',e=>{if(e.target.id==='q'){S.q=e.target.value;render()}else if(e.target.id==='cq'){S.cq=e.target.value;render()}});
-document.addEventListener('change',e=>{if(e.target.dataset&&e.target.dataset.month!=null){S.month=e.target.value;S.open={};recompute();S.last='';render();return}const k=e.target.dataset&&e.target.dataset.cost;if(k==null)return;const v=e.target.value.trim();if(v===''||isNaN(parseFloat(v)))return;S.over[k]=parseFloat(v);S.editKey=null;store.set('costs',S.over);recompute();render();toast(t().saved)});
+document.addEventListener('change',e=>{if(e.target.dataset&&e.target.dataset.month!=null){setMonth(e.target.value);S.open={};recompute();S.last='';render();return}const k=e.target.dataset&&e.target.dataset.cost;if(k==null)return;const v=e.target.value.trim();if(v===''||isNaN(parseFloat(v)))return;S.over[k]=parseFloat(v);S.editKey=null;store.set('costs',S.over);recompute();render();toast(t().saved)});
 $('#file').addEventListener('change',e=>{addFiles([...e.target.files]);e.target.value=''});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&S.editKey&&e.target.id==='edc'){S.editKey=null;render();return}if(e.key!=='Enter')return;if(e.target.dataset&&e.target.dataset.cost!=null){e.target.blur();return}if(e.target.id==='sname'){e.preventDefault();doSave(!!(S.setId&&Saves.list.find(s=>s.id===S.setId)))}else if(e.target.id==='rname'){const b=$('[data-dorename]');if(b)b.click()}});
 window.addEventListener('hashchange',()=>{render();toTop()});
