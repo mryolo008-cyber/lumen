@@ -430,6 +430,9 @@ a.brand{text-decoration:none;color:inherit;cursor:pointer;border-radius:12px;tra
 .netstrip .eq{display:flex;flex-wrap:wrap;align-items:center;gap:10px 12px}.netstrip .term{display:flex;flex-direction:column;gap:4px;padding:10px 14px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid var(--line)}
 .netstrip .term .dim{font-size:11.5px}.netstrip .term b{font-size:16px;font-weight:600}.netstrip .term.res{background:var(--posbg);border-color:rgba(82,224,166,.3)}.netstrip .op{color:var(--dim);font-size:18px}
 @media (max-width:980px){.netstrip{grid-template-columns:minmax(0,1fr);gap:16px}}
+.fmap{margin-top:6px;font-size:11.5px;color:var(--mut)}.fmap summary{cursor:pointer;color:#9AA6FF;list-style:none;display:inline-flex;align-items:center;gap:6px}.fmap summary::-webkit-details-marker{display:none}.fmap summary:before{content:'▸';font-size:10px;transition:transform .2s}.fmap[open] summary:before{transform:rotate(90deg)}
+.fmap div{display:flex;flex-direction:column;gap:3px;margin-top:6px;padding:8px 10px;border-radius:10px;background:rgba(255,255,255,.03);border:1px solid var(--line);max-height:180px;overflow:auto}
+.fmap span{display:flex;gap:8px;align-items:baseline}.fmap i{font-style:normal;color:var(--dim);min-width:22px}.fmap em{font-style:normal;color:var(--ink);margin-left:auto;white-space:nowrap}
 </style>
 </head>
 <body>
@@ -469,42 +472,115 @@ var LumenEngine = (function () {
   function skuKey(s) { return String(s == null ? '' : s).trim().toUpperCase().replace(/\s+/g, ' '); }
 
   // rows: array of arrays. Returns {kind, header index}
-  function findHeader(rows, need) {
-    for (var i = 0; i < Math.min(rows.length, 30); i++) {
-      var r = (rows[i] || []).map(clean);
-      if (need.every(function (n) { return r.indexOf(n) >= 0; })) return i;
-    }
-    return -1;
-  }
-  var KINDS = {
-    orders: ['Order ID', 'Deal Price', 'Quantity', 'SKU Reference No.'],
-    conv: ['Order id', 'Item Name', 'Expense(RM)'],
-    ads: ['Ad Name', 'Cost per Direct Conversion'],
-    cost: ['Item', 'Ref. Cost'],
-    tt_orders: ['Order ID', 'Seller SKU', 'SKU Subtotal After Discount'],
-    tt_income: ['Order/Adjustment ID', 'Transaction type', 'Total Fees']
+  /* ---------- column pairing by keyword (never by column letter or position) ----------
+     Each field the formulas need is found by keywords in the header row: an exact (normalised) match first,
+     then a header that contains the keyword, skipping headers with an excluded word. */
+  function nk(h) { return clean(h).toLowerCase().replace(/[^a-z0-9一-鿿]/g, ''); }
+  var REQ = 1;
+  var FIELDS = {
+    orders: [
+      ['Order ID', ['orderid', '订单编号', '订单号'], REQ, ['parent', 'adjust']],
+      ['Deal Price', ['dealprice', '成交价', '成交价格'], REQ],
+      ['Quantity', ['quantity', 'qty', '数量'], REQ, ['return', 'refund', '退']],
+      ['SKU Reference No.', ['skureferenceno', 'skureference', 'skuref', '选项货号', '变体货号', 'sku货号'], REQ, ['parent', '主商品']],
+      ['Product Name', ['productname', '商品名称', '产品名称']],
+      ['Variation Name', ['variationname', '规格名称', '变体名称', 'variation', '规格'], 0, ['id']],
+      ['Order Complete Time', ['ordercompletetime', 'ordercompletedtime', 'completetime', 'completedtime', '订单完成时间', '完成时间']],
+      ['Transaction Fee', ['transactionfee', '交易手续费', '手续费']],
+      ['Commission Fee', ['commissionfee', '佣金'], 0, ['affiliate', 'brand', '联盟', 'ams']],
+      ['Service Fee', ['servicefee', '服务费']]
+    ],
+    conv: [
+      ['Order id', ['orderid', '订单编号', '订单号'], REQ],
+      ['Item Name', ['itemname', 'productname', '商品名称'], REQ],
+      ['Expense(RM)', ['expenserm', 'expense', '佣金支出', '支出'], REQ, ['deduction']]
+    ],
+    ads: [
+      ['Ad Name', ['adname', '广告名称'], REQ],
+      ['Cost per Direct Conversion', ['costperdirectconversion', '每笔直接转化成本', '直接转化成本'], REQ],
+      ['Expense', ['expense', '花费', '广告花费'], 0, ['rm)']],
+      ['Product ID', ['productid', '商品编号', '商品id']]
+    ],
+    tt_orders: [
+      ['Order ID', ['orderid', '订单号', '订单编号'], REQ, ['adjust', 'package']],
+      ['Seller SKU', ['sellersku', '卖家sku', '商家sku'], REQ],
+      ['Quantity', ['quantity', '数量'], REQ, ['return', 'refund', '退']],
+      ['SKU Subtotal After Discount', ['skusubtotalafterdiscount', '折后小计'], REQ],
+      ['SKU Subtotal Before Discount', ['skusubtotalbeforediscount', '折前小计']],
+      ['SKU Seller Discount', ['skusellerdiscount', '卖家折扣']],
+      ['SKU Platform Discount', ['skuplatformdiscount', '平台折扣']],
+      ['Product Name', ['productname', '商品名称', '产品名称']],
+      ['Variation', ['variation', '规格'], 0, ['id']],
+      ['Created Time', ['createdtime', '创建时间', '下单时间']],
+      ['SKU ID', ['skuid']]
+    ],
+    tt_income: [
+      ['Order/Adjustment ID', ['orderadjustmentid', 'orderid', '订单调整id'], REQ, ['related']],
+      ['Transaction type', ['transactiontype', '交易类型'], REQ],
+      ['Total Fees', ['totalfees', '总费用'], REQ],
+      ['Order settled time', ['ordersettledtime', 'settledtime', '结算时间']],
+      ['Order created time', ['ordercreatedtime', 'createdtime']],
+      ['Total settlement amount', ['totalsettlementamount', 'settlementamount', '结算金额']],
+      ['Total Revenue', ['totalrevenue', '总收入']],
+      ['Subtotal after seller discounts', ['subtotalaftersellerdiscounts'], 0, ['refund']],
+      ['Transaction fee', ['transactionfee', '交易手续费'], 0, ['handling', 'installment']],
+      ['TikTok Shop commission fee', ['tiktokshopcommissionfee', 'commissionfee', '佣金'], 0, ['affiliate', 'partner']],
+      ['Seller shipping fee', ['sellershippingfee', '卖家运费']],
+      ['Affiliate Commission', ['affiliatecommission'], 0, ['deposit', 'refund', 'shop', 'partner']],
+      ['Affiliate partner commission', ['affiliatepartnercommission']],
+      ['Affiliate commission deposit', ['affiliatecommissiondeposit']],
+      ['Affiliate commission refund', ['affiliatecommissionrefund']],
+      ['Affiliate Shop Ads commission', ['affiliateshopadscommission'], 0, ['partner']],
+      ['Affiliate Partner shop ads commission', ['affiliatepartnershopadscommission']],
+      ['GMV Max ad fee', ['gmvmaxadfee']],
+      ['Bonus cashback service fee', ['bonuscashbackservicefee']],
+      ['Platform support fee', ['platformsupportfee']],
+      ['Adjustment amount', ['adjustmentamount', '调整金额']],
+      ['Related order ID', ['relatedorderid']]
+    ],
+    cost: [
+      ['Item', ['item', 'sku', '货号', '商品编号', '商品编码'], REQ, ['cost', 'description', 'group']],
+      ['Ref. Cost', ['refcost', 'unitcost', 'costprice', 'cost', '成本', '进价'], REQ],
+      ['Group', ['group', '分组', '类别']],
+      ['Description', ['description', '描述']]
+    ]
   };
+  var ORDER = ['orders', 'conv', 'ads', 'tt_orders', 'tt_income', 'cost'];
+  function pair(head, kind) {
+    var H = head.map(nk), used = {}, map = {}, ok = true;
+    FIELDS[kind].forEach(function (f) {
+      var keys = f[1], ex = (f[3] || []).map(nk), col = -1;
+      var bad = function (h) { return ex.some(function (x) { return x && h.indexOf(x) >= 0; }); };
+      for (var a = 0; a < keys.length && col < 0; a++) for (var j = 0; j < H.length; j++) if (!used[j] && H[j] === nk(keys[a])) { col = j; break; }
+      for (var b = 0; b < keys.length && col < 0; b++) for (var j2 = 0; j2 < H.length; j2++) if (!used[j2] && H[j2] && H[j2].indexOf(nk(keys[b])) >= 0 && !bad(H[j2])) { col = j2; break; }
+      if (col >= 0) { used[col] = 1; map[f[0]] = col; } else if (f[2]) ok = false;
+    });
+    return ok ? map : null;
+  }
   function detect(rows) {
-    for (var k in KINDS) { var h = findHeader(rows, KINDS[k]); if (h >= 0) return { kind: k, header: h }; }
-    // cost sheet fallback: first column Item, 4th column any cost header
-    var h2 = findHeader(rows, ['Item']);
-    if (h2 >= 0) return { kind: 'cost', header: h2 };
+    for (var i = 0; i < Math.min(rows.length, 30); i++) {
+      var head = (rows[i] || []); if (!head.some(function (c) { return clean(c); })) continue;
+      for (var k = 0; k < ORDER.length; k++) { var m = pair(head, ORDER[k]); if (m) return { kind: ORDER[k], header: i, map: m }; }
+    }
     return null;
   }
-  function objects(rows, hi) {
+  function objects(rows, hi, map) {
     var head = rows[hi].map(clean), out = [];
+    if (!map) { var d = detect(rows.slice(hi)); map = d ? d.map : {}; }
     for (var i = hi + 1; i < rows.length; i++) {
       var r = rows[i]; if (!r || !r.some(function (c) { return c !== '' && c != null; })) continue;
-      var o = {}; head.forEach(function (h, j) { if (h) o[h] = r[j]; }); o.__row = r; out.push(o);
+      var o = {}; head.forEach(function (h, j) { if (h) o[h] = r[j]; });
+      for (var f in map) o[f] = r[map[f]];
+      out.push(o);
     }
     return out;
   }
-
+  function pairing(rows, d) { var head = rows[d.header].map(clean), out = []; for (var f in d.map) out.push([f, head[d.map[f]], d.map[f]]); return out; }
   function costTable(K) {
     var costExact = {}, costItem = {}, packs = {};
     (K || []).forEach(function (r) {
-      var item = clean(r['Item']); if (!item || !r['Group'] && r['Group'] !== undefined && r['Ref. Cost'] == null) return;
-      var raw = r['Ref. Cost'] !== undefined ? r['Ref. Cost'] : (r.__row ? r.__row[3] : undefined);
+      var item = clean(r['Item']); if (!item) return;
+      var raw = r['Ref. Cost'];
       if (raw === undefined || raw === null || raw === '') return;
       var key = skuKey(item); costExact[key] = num(raw); costItem[key] = item;
       var mk = key.split(' ')[0]; if (key !== mk && /\d+\s*PCS/.test(key)) packs[mk] = 1;
@@ -733,7 +809,7 @@ var LumenEngine = (function () {
     (src.tt_orders || []).forEach(function (r) { var id = clean(r['Order ID']), m = monthOf(ttDate(r['Created Time'])); if (!/^\d+$/.test(id) || !num(r['Quantity']) || !m || seen['t' + id]) return; seen['t' + id] = 1; out.tiktok[m] = (out.tiktok[m] || 0) + 1; });
     return out;
   }
-  return { detect: detect, objects: objects, compute: compute, computeTT: computeTT, months: months, monthOf: monthOf, skuKey: skuKey, num: num };
+  return { detect: detect, objects: objects, pairing: pairing, FIELDS: FIELDS, compute: compute, computeTT: computeTT, months: months, monthOf: monthOf, skuKey: skuKey, num: num };
 })();
 if (typeof module !== 'undefined') module.exports = LumenEngine;
 
@@ -866,7 +942,7 @@ async function readFile(f){
   wb.SheetNames.forEach(n=>{const ws=wb.Sheets[n];if(!ws)return;let r=0,c=0;for(const k in ws){if(k[0]==='!')continue;const a=XLSX.utils.decode_cell(k);if(a.r>r)r=a.r;if(a.c>c)c=a.c}
     const cur=ws['!ref']?XLSX.utils.decode_range(ws['!ref']):{s:{r:0,c:0},e:{r:0,c:0}};if(r>cur.e.r||c>cur.e.c)ws['!ref']=XLSX.utils.encode_range({s:cur.s,e:{r:Math.max(r,cur.e.r),c:Math.max(c,cur.e.c)}})});
   if(!/\.csv$/i.test(f.name)){const lu=lumenImport(wb,f.name);if(lu)return {lumen:lu}}
-  for(const n of wb.SheetNames){const rows=XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,raw:true,defval:''});const d=LumenEngine.detect(rows);if(d)return{kind:d.kind,rows:LumenEngine.objects(rows,d.header)}}
+  for(const n of wb.SheetNames){const rows=XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,raw:true,defval:''});const d=LumenEngine.detect(rows);if(d)return{kind:d.kind,rows:LumenEngine.objects(rows,d.header,d.map),pairs:LumenEngine.pairing(rows,d).map(p=>[p[0],p[1],XLSX.utils.encode_col(p[2])])}}
   return null}
 
 const LD={el:null,t0:0,steps:[]};
@@ -879,7 +955,7 @@ function hideLoader(now){const w=LD.el||$('#ld');LD.el=null;if(!w)return;if(now)
 const tick=()=>new Promise(r=>requestAnimationFrame(()=>setTimeout(r,0)));
 async function addFiles(list){const bad=[],L=t();if(!list.length)return;
   showLoader(L.ldRead(list.length),L.ldStepsRead);await tick();
-  S.setId=null;let i=0;const plats={};let addedInc=0;for(const f of list){try{ldStep(0,8+i/list.length*62);await tick();const r=await readFile(f);if(r&&r.lumen){await restoreLumen(r.lumen,f.name);return}if(!r){bad.push(f.name)}else{const pk=platOf(r.kind);if(pk)plats[pk]=1;if(r.kind==='tt_income'&&S.src.tt_income&&addedInc){S.src.tt_income=S.src.tt_income.concat(r.rows);S.files.tt_income={name:S.files.tt_income.name+' + '+f.name,n:S.files.tt_income.n+r.rows.length}}else{S.src[r.kind]=r.rows;S.files[r.kind]={name:f.name,n:r.rows.length}}if(r.kind==='tt_income')addedInc=1}}catch(e){bad.push(f.name)}i++}
+  S.setId=null;let i=0;const plats={};let addedInc=0;for(const f of list){try{ldStep(0,8+i/list.length*62);await tick();const r=await readFile(f);if(r&&r.lumen){await restoreLumen(r.lumen,f.name);return}if(!r){bad.push(f.name)}else{const pk=platOf(r.kind);if(pk)plats[pk]=1;if(r.kind==='tt_income'&&S.src.tt_income&&addedInc){S.src.tt_income=S.src.tt_income.concat(r.rows);S.files.tt_income={name:S.files.tt_income.name+' + '+f.name,n:S.files.tt_income.n+r.rows.length}}else{S.src[r.kind]=r.rows;S.files[r.kind]={name:f.name,n:r.rows.length,pairs:r.pairs}}if(r.kind==='tt_income')addedInc=1}}catch(e){bad.push(f.name)}i++}
   const pl=Object.keys(plats);if(pl.length)setPlat(pl.includes(S.plat)?S.plat:pl[0]);pickMonth(S.plat);
   ldStep(1,78);await tick();recompute();ldStep(2,92);const got=pl.map(p=>L.storedIn(p==='tiktok'?L.pTiktok:L.pShopee)).join(' · ');
   if(bad.length)ldNote(L.unknown+bad.join(', '),'warn');else if(got)ldNote(got,'ok');await finishLoader(bad.length?2600:1100);
@@ -902,7 +978,7 @@ function spark(vals,color,id){if(vals.length<2)return'';const W=200,H=38,mx=Math
 
 function vUpload(){const L=t(),R=S.res,n=KINDS.filter(k=>S.files[k]).length,TT=S.plat==='tiktok';
   const icK={orders:'file',conv:'trend',ads:'ad',cost:'costs',tt_orders:'file',tt_income:'cash'};const REQ={orders:1,tt_orders:1};
-  const slots=KINDS.map((k,i)=>{const f=S.files[k];return `<div class="hs ${f?'ok':''}" style="--d:${i}"><span class="hsi">${f?ic('check',16,'#0A0D18',2.6):ic(icK[k],17,'#C3CBFF',1.9)}</span><div class="hsm"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><b>${esc(L['k_'+k])}</b><span class="tag ${f?'ok':(REQ[k]?'req':'opt')}">${esc(f?L.got:(REQ[k]?L.need:L.opt))}</span></div><span class="hsd ${f?'mono':''}">${f?esc(f.name):esc(L['d_'+k])}</span></div>${f?`<span class="num hsn">${esc(f0(f.n))}<small> ${esc(L.rows)}</small></span>`:''}</div>`}).join('');
+  const slots=KINDS.map((k,i)=>{const f=S.files[k];return `<div class="hs ${f?'ok':''}" style="--d:${i}"><span class="hsi">${f?ic('check',16,'#0A0D18',2.6):ic(icK[k],17,'#C3CBFF',1.9)}</span><div class="hsm"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><b>${esc(L['k_'+k])}</b><span class="tag ${f?'ok':(REQ[k]?'req':'opt')}">${esc(f?L.got:(REQ[k]?L.need:L.opt))}</span></div><span class="hsd ${f?'mono':''}">${f?esc(f.name):esc(L['d_'+k])}</span>${f&&f.pairs&&f.pairs.length?`<details class="fmap"><summary>${esc(L.fmapT(f.pairs.length))}</summary><div>${f.pairs.map(p=>`<span><i class="num">${esc(p[2])}</i>${esc(p[1])}<em>→ ${esc(L['fm_'+p[0]]||p[0])}</em></span>`).join('')}</div></details>`:''}</div>${f?`<span class="num hsn">${esc(f0(f.n))}<small> ${esc(L.rows)}</small></span>`:''}</div>`}).join('');
   const feats=[['bolt',L.hf1],['check',L.hf2],['dl',L.hf3]];
   const recent=(!R&&Saves.list.length)?`<div class="hrec"><div class="hrh"><span>${esc(L.recent)}</span><a href="#saved">${esc(L.all)}</a></div>${Saves.list.slice(0,3).map(s=>`<button type="button" class="hri" data-openset="${esc(s.id)}"><span class="hrc">${ic('saved',14,'#C3CBFF',2)}</span><span class="hrn"><b>${esc(s.name)}</b><span class="num">${esc(s.period||'')}</span></span><span class="num pos">${f2((s.summary||{}).net2||0)}</span>${ic('chev',14)}</button>`).join('')}</div>`:'';
   let checks='';
@@ -1424,6 +1500,10 @@ Object.assign(X.zh,{storedIn:p=>`已存入 ${p}`});Object.assign(X.en,{storedIn:
 function pickMonth(p){S.monthP=S.monthP||{};const M=LumenEngine.months(S.src)[p]||{};if(!S.monthP[p]||!M[S.monthP[p]])S.monthP[p]=bestMonth(p);if(p===S.plat)S.month=S.monthP[p]||''}
 
 function alignTotal(){S.monthP=S.monthP||{};const a=S.monthP.shopee,b=S.monthP.tiktok;if(a&&b&&a!==b){S.monthP.shopee=S.monthP.tiktok=S.month;recompute()}}
+
+/* ---------- show how each column was paired by keyword ---------- */
+Object.assign(X.zh,{fmapT:n=>`按关键字对上 ${n} 个栏位`,'fm_Deal Price':'售价 Q','fm_Quantity':'数量 R','fm_SKU Reference No.':'小 SKU','fm_Transaction Fee':'手续费','fm_Commission Fee':'佣金','fm_Service Fee':'服务费','fm_Expense(RM)':'联盟佣金','fm_Cost per Direct Conversion':'广告费 U','fm_Ref. Cost':'单位成本','fm_Item':'SKU','fm_Order Complete Time':'月份依据','fm_Created Time':'月份依据','fm_Seller SKU':'小 SKU','fm_Total Fees':'总费用（核对）','fm_Total settlement amount':'到账金额','fm_Order settled time':'结算时间','fm_Seller shipping fee':'运费','fm_TikTok Shop commission fee':'佣金','fm_Transaction fee':'手续费','fm_Affiliate Commission':'联盟佣金','fm_Affiliate Shop Ads commission':'广告费'});
+Object.assign(X.en,{fmapT:n=>`${n} columns paired by keyword`,'fm_Deal Price':'Price Q','fm_Quantity':'Qty R','fm_SKU Reference No.':'Variation SKU','fm_Expense(RM)':'Affiliate','fm_Cost per Direct Conversion':'Ads U','fm_Ref. Cost':'Unit cost','fm_Order Complete Time':'Month basis','fm_Created Time':'Month basis','fm_Seller SKU':'Variation SKU','fm_Total settlement amount':'Received','fm_Affiliate Shop Ads commission':'Ads'});
 
 /* ---------- styled Excel exports (xlsx-js-style) ---------- */
 Object.assign(X.zh,{expOk:'营销报告已导出',xT:'Lumen 真利 · 营销报告',xPer:'期间',xGen:'生成于',xKRev:'营业额',xKNet:'真实净利',xKMg:'利润率',xKOrd:'订单',xKUnits:'销量',
