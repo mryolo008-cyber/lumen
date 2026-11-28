@@ -368,6 +368,15 @@ main.anim .hs{animation:slidein .5s cubic-bezier(.2,.7,.2,1) both;animation-dela
 .ld.fl.warn .ldr.r1{border-color:rgba(244,196,90,.9)}.ld.fl.warn .ldr.r2{border-color:rgba(244,196,90,.28)}.ld.fl.warn .ldc{background:linear-gradient(145deg,#FFE09A,#E9A93A)}
 @keyframes flring{from{transform:scale(.6) rotate(-90deg);opacity:0}to{transform:none;opacity:1}}@keyframes flpop{from{transform:scale(.4);opacity:0}to{transform:none;opacity:1}}
 @media (prefers-reduced-motion:reduce){.ldr,.ldc,.ldp{animation:none!important}}
+/* loader: no fog over the page — a compact floating card with the icon */
+.ld{background:transparent!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;pointer-events:none}
+.ld.fl{pointer-events:auto}
+.ldb{width:auto!important;min-width:250px;max-width:min(340px,86vw);gap:12px!important;padding:22px 26px 20px;border-radius:22px;background:linear-gradient(180deg,rgba(24,29,43,.97),rgba(15,19,29,.97));border:1px solid rgba(154,166,255,.28);box-shadow:0 30px 70px -18px rgba(0,0,0,.75),0 0 40px -10px rgba(139,155,255,.35);pointer-events:auto}
+.ldo{width:84px!important;height:84px!important;margin-bottom:2px!important}
+.ldt{font-size:15px!important}
+.ldo .ldr.r2{inset:9px!important}.ldo .ldc{width:44px!important;height:44px!important;margin:-22px 0 0 -22px!important;border-radius:14px!important}
+.lds{display:none!important}
+.ld.fl .ldb{gap:12px!important}.ld.fl .ldt{font-size:15px!important}
 @media (max-width:1100px){.slots{grid-template-columns:repeat(2,minmax(0,1fr))}.row,.ins{grid-template-columns:minmax(0,1fr)}}
 @media (max-width:900px){.app{flex-direction:column}.side{width:auto;height:auto;position:static;flex-direction:row;flex-wrap:wrap;align-items:center;padding:12px;border-right:0;border-bottom:1px solid var(--line)}.brand{padding:4px 8px;width:100%}.sect,.nav .badge{display:none}.shop{margin:6px 0 0;width:100%;padding:0;border:0;background:none}.shop .bar,.shop span,.shop b{display:none}.swb{margin-top:0;width:auto}.nav{padding:8px 10px}.nav.on:before{display:none}.grid4{grid-template-columns:repeat(2,minmax(0,1fr))}.wf .t{height:180px}.wf .x{font-size:10px}.chk{grid-template-columns:auto minmax(0,1fr)}.chk .meter,.chk .num{grid-column:2}}
 @media (max-width:520px){.wf .n{display:none}.grid4,.slots{grid-template-columns:minmax(0,1fr)}.wf{gap:6px}.donut svg{width:120px;height:120px}.top h1{font-size:19px}}
@@ -484,7 +493,14 @@ a.brand{text-decoration:none;color:inherit;cursor:pointer;border-radius:12px;tra
 @media (max-width:620px){.xhero{flex-direction:column;align-items:stretch;text-align:left}.xgauge{margin:0 auto}.xgrid{grid-template-columns:minmax(0,1fr)}.xcash{grid-template-columns:minmax(0,1fr)}.xliq{margin:0 auto}.xpanel{padding:18px}.xv.big{font-size:32px}.xmeta{display:none}}
 .xpay .xhero{background:linear-gradient(135deg,rgba(64,217,154,.12),rgba(35,181,124,.03))}
 .g2 .trk.pend{stroke:rgba(244,196,90,.28);stroke-dasharray:3 3}.g2 .tk line.pd{stroke:rgba(244,196,90,.35)}.g2 .tk line.on{stroke:rgba(124,240,197,.8)}
-.xc.xwf{grid-column:1/-1;padding-bottom:12px}.xwb{display:flex;flex-direction:column;gap:7px;margin-top:10px}
+.xc.xwf{grid-column:1/-1;padding-bottom:14px}
+.xwtop{display:flex;align-items:baseline;justify-content:space-between;margin-top:12px;font-size:12.5px;color:var(--mut)}.xwtop b{font:600 15px 'Geist Mono';color:var(--ink)}
+.xwbar{display:flex;height:10px;border-radius:6px;overflow:hidden;gap:2px;margin-top:8px;background:rgba(255,255,255,.04)}.xwbar span{display:block;height:100%;animation:wfin 1s cubic-bezier(.2,.8,.2,1) both}
+.xwrows{display:grid;grid-template-columns:repeat(var(--n,4),minmax(0,1fr));gap:8px 18px;margin-top:12px}
+.xwrows .xwr{display:grid;grid-template-columns:8px 1fr auto;grid-template-rows:auto auto;column-gap:8px;align-items:center;padding:8px 10px;border-radius:10px;background:rgba(255,255,255,.025);border:1px solid var(--line)}
+.xwrows .xwr i{width:8px;height:8px;border-radius:2px;grid-row:1}.xwrows .xwl{font-size:12px;color:var(--mut)}.xwrows .xwp{font:500 11px 'Geist Mono';color:var(--dim);grid-column:3}
+.xwrows .xwr b{grid-column:2/4;font:600 14px 'Geist Mono';color:var(--ink);margin-top:2px}.xwrows .xwr b.neg{color:var(--neg)}.xwrows .xwr b.acc{color:#9AA6FF}
+.xwrows .xwr.tot{background:linear-gradient(135deg,rgba(64,217,154,.14),rgba(64,217,154,.04));border-color:rgba(64,217,154,.35)}.xwrows .xwr.tot b{color:#5BE8B0}.xwrows .xwr.tot .xwl{color:var(--ink);font-weight:600}.xwb{display:flex;flex-direction:column;gap:7px;margin-top:10px}
 .xwr{display:grid;grid-template-columns:130px minmax(0,1fr) 92px;align-items:center;gap:12px;font-size:12px;color:var(--mut)}
 .xwl{display:flex;align-items:center;gap:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.xwl .op{font:500 12px 'Geist Mono';color:var(--dim);font-style:normal;width:10px}
 .xwt{position:relative;height:8px;border-radius:4px;background:rgba(255,255,255,.04)}.xwt i{position:absolute;top:0;bottom:0;border-radius:4px;animation:wfin 1s cubic-bezier(.2,.8,.2,1) both}
@@ -493,6 +509,7 @@ a.brand{text-decoration:none;color:inherit;cursor:pointer;border-radius:12px;tra
 .xs.pend{background:repeating-linear-gradient(135deg,#F4C45A 0 6px,#C9962F 6px 12px)}
 .xflat{height:42px;margin-top:10px;border-bottom:1px dashed rgba(255,255,255,.1)}
 .sd{display:inline-block;width:7px;height:7px;border-radius:50%;box-shadow:0 0 8px currentColor}
+@media (max-width:900px){.xwrows{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:620px){.xwr{grid-template-columns:96px minmax(0,1fr) 78px}}
 @media (prefers-reduced-motion:reduce){.xwt i{animation:none!important}}
 @media (prefers-reduced-motion:reduce){.xbgw path,.xliq path,.xs:after,.xgauge .arc{animation:none!important}}
@@ -1569,11 +1586,11 @@ Object.assign(X.zh,{fmapT:n=>`按关键字对上 ${n} 个栏位`,'fm_Deal Price'
 Object.assign(X.en,{fmapT:n=>`${n} columns paired by keyword`,'fm_Deal Price':'Price Q','fm_Quantity':'Qty R','fm_SKU Reference No.':'Variation SKU','fm_Expense(RM)':'Affiliate','fm_Cost per Direct Conversion':'Ads U','fm_Ref. Cost':'Unit cost','fm_Order Complete Time':'Month basis','fm_Created Time':'Month basis','fm_Seller SKU':'Variation SKU','fm_Total settlement amount':'Received','fm_Affiliate Shop Ads commission':'Ads'});
 
 /* ---------- overview hero: how revenue turns into profit, and how much is already in hand ---------- */
-Object.assign(X.zh,{hfT:'这个月赚多少',hfS:'营业额一步步扣掉费用和成本，剩下的就是真实净利',hfDed:'扣平台、联盟、广告费用',hfCost:'扣货品成本',hfOf:p=>`占营业额 ${p}`,
+Object.assign(X.zh,{hfT:'本月营销',hfS:'营业额一步步扣掉费用和成本，剩下的就是真实净利',hfDed:'扣平台、联盟、广告费用',hfCost:'扣货品成本',hfOf:p=>`占营业额 ${p}`,
   hfPlat:'平台',hfAff:'联盟',hfAds:'广告',pyT:'钱到账了吗',pyS:'营业额里，已经结算到账和还没结算的部分',pyPaidRev:'已结算订单',pyPendRev:'未结算订单',
   rcT:'净赚 · 已经落袋',rcPaid:'已到账金额（已扣平台费用）',rcCost:'这些订单的货品成本',rcAds:'店铺广告（GMV）',rcReimb:'平台补偿',rcNet:'净赚',
   rcRev:'营业额',rcFees:'平台费用、联盟、广告',rcAll:'Shopee 完成订单都已结算，全部算已到账',pyAllPaid:'全部已结算'});
-Object.assign(X.en,{hfT:'What this month earned',hfS:'Revenue minus fees and cost of goods, step by step — what is left is true profit',hfDed:'Platform, affiliate & ad fees',hfCost:'Cost of goods',hfOf:p=>`${p} of revenue`,
+Object.assign(X.en,{hfT:'This month’s sales',hfS:'Revenue minus fees and cost of goods, step by step — what is left is true profit',hfDed:'Platform, affiliate & ad fees',hfCost:'Cost of goods',hfOf:p=>`${p} of revenue`,
   hfPlat:'Platform',hfAff:'Affiliate',hfAds:'Ads',pyT:'Has the money arrived?',pyS:'How much of revenue is settled and paid out vs not yet',pyPaidRev:'Settled orders',pyPendRev:'Not settled',
   rcT:'Net earned · in hand',rcPaid:'Received (after platform fees)',rcCost:'Cost of goods for these orders',rcAds:'Shop ads (GMV)',rcReimb:'Platform reimbursement',rcNet:'Net earned',
   rcRev:'Revenue',rcFees:'Platform, affiliate & ad fees',rcAll:'Shopee completed orders are all settled — everything counts as received',pyAllPaid:'All settled'});
@@ -1619,10 +1636,11 @@ function payStrip(R){const L=t(),tt=R.tot,tk=R.plat==='tiktok',rv=tt.rev||1;
   const dk=Object.keys(days).sort(),sp=dk.map(d=>days[d].p),su=dk.map(d=>days[d].u);
   const terms=tk?[[L.rnPaid,tt.paidAmt,'','#52E0A6'],[L.rnCost,tt.setCost,'−','#F4C45A'],[L.rnAds,tt.shopAds,'−','#FF5C8A']].concat(tt.reimb?[[L.rnReimb,tt.reimb,'+','#9AA6FF']]:[])
     :[[L.rnRev,tt.rev,'','#8B9BFF'],[L.rnFees,tt.ded,'−','#FF8F73'],[L.rnCost,tt.cost,'−','#F4C45A']];
-  const base=terms[0][1]||1;let run=0;
-  const wf=terms.filter(x=>x[1]||!x[2]).map(([l,x,s,c],i)=>{const st=s==='−'?run-x:run,w=x/base*100,left=(s==='−'?run-x:run)/base*100;run=s==='−'?run-x:run+x;
-    return `<div class="xwr"><span class="xwl"><em class="op">${s||'&nbsp;'}</em>${esc(l)}</span><span class="xwt"><i style="left:${Math.max(0,left).toFixed(2)}%;width:${Math.max(.6,w).toFixed(2)}%;background:linear-gradient(90deg,${c}cc,${c})"></i></span><b class="num">${s}${f2(x)}</b></div>`}).join('')+
-    `<div class="xwr tot"><span class="xwl"><em class="op">=</em>${esc(L.rcNet)}</span><span class="xwt"><i style="left:0;width:${Math.max(.6,Math.max(v,0)/base*100).toFixed(2)}%;background:linear-gradient(90deg,#23B57C,#7CF0C5);box-shadow:0 0 12px rgba(64,217,154,.6)"></i></span><b class="num pos">${f2(v)}</b></div>`;
+  const base=terms[0][1]||1,parts=terms.slice(1).filter(x=>x[2]==='−'&&x[1]>0).concat([[L.rcNet,Math.max(v,0),'=','#40D99A']]),ptot=parts.reduce((s,x)=>s+x[1],0)||1;
+  const wf=`<div class="xwtop"><span class="xwl0">${esc(terms[0][0])}</span><b class="num">RM ${f2(base)}</b></div>
+    <div class="xwbar">${parts.map(([l,x,s,c])=>`<span style="flex:${(x/ptot).toFixed(5)};background:linear-gradient(180deg,${c},${c}bb)" title="${esc(l)} ${f2(x)}"></span>`).join('')}</div>
+    <div class="xwrows" style="--n:${terms.slice(1).filter(x=>x[1]).length+1}">${terms.slice(1).filter(x=>x[1]).map(([l,x,s,c])=>`<div class="xwr"><i style="background:${c}"></i><span class="xwl">${esc(l)}</span><span class="xwp num">${pc(x/base)}</span><b class="num ${s==='−'?'neg':'acc'}">${s}${f2(x)}</b></div>`).join('')}
+    <div class="xwr tot"><i style="background:#40D99A;box-shadow:0 0 8px #40D99A"></i><span class="xwl">${esc(L.rcNet)}</span><span class="xwp num">${pc(v/base)}</span><b class="num">${f2(v)}</b></div></div>`;
   const notes=tk?[tt.setMissing?L.rnMiss(tt.setMissing):''].filter(Boolean):[L.rcAll];
   const cell=(k,lab,en,val,sub,cls,wv)=>`<div class="xc ${k}"><div class="xl"><span>${lab}</span><em>${en}</em></div><div class="xv num ${cls}"><small>RM</small><span data-count="${val}">${f2(val)}</span></div><div class="xsub">${sub}</div>${wv}</div>`;
   const ord=lang==='zh'?'单':'orders';
