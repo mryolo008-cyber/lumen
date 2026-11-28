@@ -547,6 +547,20 @@ b.neg,.sgh b.neg{color:var(--neg)}b.cst{color:#F4C45A}b.acc{color:#9AA6FF}
 @media (max-width:620px){.xwr{grid-template-columns:96px minmax(0,1fr) 78px}}
 @media (prefers-reduced-motion:reduce){.xwt i{animation:none!important}}
 @media (prefers-reduced-motion:reduce){.xbgw path,.xliq path,.xs:after,.xgauge .arc{animation:none!important}}
+.xsec{margin-top:16px}
+.cx1.cxbl{background:linear-gradient(120deg,rgba(139,155,255,.13),rgba(139,155,255,.03) 55%,rgba(10,13,22,.2));border-color:rgba(139,155,255,.25)}
+.cx1.cxgd{background:linear-gradient(120deg,rgba(244,196,90,.11),rgba(244,196,90,.025) 55%,rgba(10,13,22,.2));border-color:rgba(244,196,90,.24)}
+.xtop .xtag{color:#F4C45A;border-color:rgba(244,196,90,.35);background:rgba(244,196,90,.1);box-shadow:0 0 18px rgba(244,196,90,.16)}
+.xchips{padding:3px!important;background:rgba(10,13,22,.45)!important;border:1px solid var(--line)}
+.sech{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:16px 0 10px}.sech>div:first-child{display:flex;align-items:baseline;gap:10px;font-size:13px;color:var(--mut);min-width:0}.sech>div:first-child span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sech em{font-style:normal;font:500 10px 'Geist Mono';letter-spacing:.16em;color:var(--dim);white-space:nowrap}
+.dcol{padding:14px 14px 12px}.dcol .dwrap{min-height:230px;max-height:280px}.dcol .dwrap .chart{min-height:220px}
+.xsub .code,.tnm .code{font:600 11px 'Geist Mono';color:#C3CBFF;padding:1px 6px;border-radius:5px;background:rgba(139,155,255,.12);margin-right:4px}
+.trh{display:grid;grid-template-columns:24px minmax(0,1fr) 62px 86px;gap:8px;padding:2px 4px 6px;font:600 9.5px 'Geist Mono';letter-spacing:.12em;color:var(--dim);text-transform:uppercase;border-bottom:1px solid rgba(255,255,255,.06)}.trh span:nth-child(n+3){text-align:right}
+.trw{display:grid;grid-template-columns:24px minmax(0,1fr) 62px 86px;gap:8px;align-items:center;padding:7px 4px;border-bottom:1px solid rgba(255,255,255,.035);color:var(--ink);text-decoration:none;font-size:12.5px;border-radius:6px;transition:background .15s}.trw:last-child{border-bottom:0}.trw:hover{background:rgba(255,255,255,.035)}
+.trw .rk{width:20px;height:20px;border-radius:6px;display:grid;place-items:center;font:600 10.5px 'Geist Mono';color:var(--dim);border:1px solid var(--line)}
+.tnm{display:flex;align-items:center;gap:4px;min-width:0}.tnm span{color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}.tnm svg{flex:none}
+.trw .tsc{font:500 11px 'Geist Mono';color:var(--dim);text-align:right}.trw b{font:600 12.5px 'Geist Mono';text-align:right}.trw b.pos{color:#5BE8B0}.trw b.neg{color:var(--neg)}
+@media (max-width:620px){.sech{flex-wrap:wrap}.trh,.trw{grid-template-columns:22px minmax(0,1fr) 54px 76px;gap:6px}}
 </style>
 </head>
 <body>
@@ -1146,10 +1160,8 @@ function vOverview(){const L=t(),R=S.res;if(!R)return empty();const tt=R.tot,rv=
   const topL=topCard(R,L);
   const nl=R.insights.loss.length;
   return `${heroFlow(R)}${payStrip(R)}
-  <div class="row"><section class="card"><div class="hd"><div><h2>${esc(L.wfT)}</h2><div class="sub">RM · ${esc(period())}</div></div></div>${wf}</section>
-  <section class="card" style="display:flex;flex-direction:column"><div class="hd"><div><h2>${esc(L.whereT)}</h2><div class="sub">${esc(L.whereS)}</div></div><span class="chip-s" style="background:rgba(255,255,255,.05);color:var(--mut)">RM ${f2(tt.rev)} = 100%</span></div>${donut}</section></div>
-  <div class="row"><section class="card" id="dcard" style="display:flex;flex-direction:column">${chart}</section>
-  <section class="card" id="tcard" style="display:flex;flex-direction:column">${topL}</section></div>
+  <section class="card xpanel xtrend xsec" id="dcard">${chart}</section>
+  <section class="card xpanel xtop xsec" id="tcard">${topL}</section>
   `}
 
 function mg(a){const c=a.net2<0?'#FF8F73':'#40D99A';return `<span class="mg"><b><i style="width:${Math.min(100,Math.abs(a.margin)*150).toFixed(0)}%;background:${c}"></i></b><span class="num" style="width:52px;font-size:12px;color:${c}">${pc(a.margin)}</span></span>`}
@@ -1226,12 +1238,20 @@ function dailyChart(R,L){const D=R.daily,n=D.length,mode=S.dmode||'amt',bw=100/n
   const grid=ticks.map(v=>`<line x1="0" x2="100" y1="${(100-v/ymax*100).toFixed(2)}" y2="${(100-v/ymax*100).toFixed(2)}" stroke="rgba(255,255,255,${v?'.05':'.12'})" vector-effect="non-scaling-stroke"/>`).join('');
   const yax=ticks.map(v=>`<span style="bottom:${(v/ymax*100).toFixed(2)}%">${esc(ylab(v))}</span>`).join('');
   const tabs=[['amt',L.dTabAmt],['mg',L.dTabMg]].map(([k,l])=>`<button type="button" class="chip ${mode===k?'on':''}" data-dmode="${k}">${esc(l)}</button>`).join('');
-  return `<div class="hd" style="margin-bottom:14px"><div><h2>${esc(L.dailyT)}</h2><div class="sub">${esc(mode==='amt'?L.dSubAmt:L.dSubMg)}</div></div><div class="chips" style="padding:3px">${tabs}</div></div>
-  <div class="dstats">${stats.map(([l,v,c,x])=>`<div><span class="dim">${esc(l)}${x?` · <span class="num">${esc(x)}</span>`:''}</span><b class="num ${c}">${esc(v)}</b></div>`).join('')}</div>
+  const mxR=Math.max(...D.map(d=>d.rev),1);
+  return `${bgWaves('rgba(154,166,255,.05)','rgba(64,217,154,.04)')}<div class="xhd"><div><span class="xtag">TREND</span><h2>${esc(L.dailyT)}</h2></div><span class="xmeta num">${esc(L.nDays(n))}</span></div>
+  <div class="cx1 cxbl">${gauge2(Math.max(0,tt.margin),L.dMargin)}
+    <div class="cxn"><div class="cxe"><span>${esc(L.dAvgNet)}</span><em>AVG DAILY PROFIT</em></div><div class="xv num big ${avgNet<0?'neg':'pos'}"><small>RM</small><span data-count="${avgNet}">${f2(avgNet)}</span></div><div class="xsub">${esc(L.dAvgNetS)}</div></div>
+    <div class="cxs">
+      <div class="cxr"><div class="cxh"><i class="sd" style="background:#9AA6FF;color:#9AA6FF"></i><span>${esc(L.dAvgRev)}</span><b class="num" style="color:#C3CBFF">${f2(avgRev)}</b></div><div class="cxt"><span class="cxbar"><i style="width:${(avgRev/mxR*100).toFixed(1)}%;background:linear-gradient(90deg,#6F7FF0,#AEB8FF)"></i></span><em class="num">${esc(L.dPeak)} ${f0(mxR)}</em></div></div>
+      <div class="cxr"><div class="cxh"><i class="sd" style="background:#52E0A6;color:#52E0A6"></i><span>${esc(L.dBest)} · <span class="num">${esc(best.day.slice(5))}</span></span><b class="num pos">${f2(best.net2)}</b></div><div class="cxt"><span class="cxbar"><i style="width:${(best.rev?Math.max(0,best.net2)/mxR*100:0).toFixed(1)}%;background:linear-gradient(90deg,#23B57C,#7CF0C5)"></i></span><em class="num">${esc(L.marginL)} ${pc(best.rev?best.net2/best.rev:0)}</em></div></div>
+    </div></div>
+  <div class="sech"><div><span>${esc(mode==='amt'?L.dSubAmt:L.dSubMg)}</span><em>DAILY</em></div><div class="chips xchips">${tabs}</div></div>
+  <div class="scol dcol">
   <div class="dwrap"><div class="yax num">${yax}</div><div class="chart" id="chart"><svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="ga" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#52E0A6" stop-opacity=".32"/><stop offset="1" stop-color="#52E0A6" stop-opacity="0"/></linearGradient><linearGradient id="gb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9AA6FF" stop-opacity=".55"/><stop offset="1" stop-color="#9AA6FF" stop-opacity=".12"/></linearGradient><linearGradient id="gm" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#63E8B0"/><stop offset="1" stop-color="#52E0A6" stop-opacity=".25"/></linearGradient></defs>${grid}${bars}${line}<line class="avg" x1="0" x2="100" y1="${avgY.toFixed(2)}" y2="${avgY.toFixed(2)}" stroke="rgba(244,196,90,.7)" stroke-dasharray="4 4" vector-effect="non-scaling-stroke"/></svg>
   <span class="avgl num" style="top:${avgY.toFixed(2)}%">${esc(avgLabel)}</span>${dots}<div class="xh hide" id="xh"></div><div class="hit">${D.map((d,i)=>`<div data-d="${i}"></div>`).join('')}</div><div class="tip hide" id="tip"></div></div></div>
   <div class="xl" style="margin-left:52px">${D.map((d,i)=>`<div>${n>16&&i%2?'':esc(d.day.slice(8))}</div>`).join('')}</div>
-  <div style="display:flex;gap:18px;font-size:12px;margin-top:12px" class="mut">${mode==='amt'?`<span style="display:flex;align-items:center;gap:6px"><i style="width:10px;height:10px;border-radius:3px;background:rgba(154,166,255,.45)"></i>${esc(L.tipRev)}</span><span style="display:flex;align-items:center;gap:6px"><i style="width:14px;height:2px;border-radius:2px;background:#52E0A6"></i>${esc(L.tipTP)}</span>`:`<span style="display:flex;align-items:center;gap:6px"><i style="width:10px;height:10px;border-radius:3px;background:#52E0A6"></i>${esc(L.dMarginD)}</span>`}<span style="display:flex;align-items:center;gap:6px"><i style="width:14px;border-top:1px dashed #F4C45A"></i>${esc(mode==='amt'?L.dAvgRev:L.dMargin)}</span></div>`}
+  <div style="display:flex;gap:18px;font-size:12px;margin-top:12px" class="mut">${mode==='amt'?`<span style="display:flex;align-items:center;gap:6px"><i style="width:10px;height:10px;border-radius:3px;background:rgba(154,166,255,.45)"></i>${esc(L.tipRev)}</span><span style="display:flex;align-items:center;gap:6px"><i style="width:14px;height:2px;border-radius:2px;background:#52E0A6"></i>${esc(L.tipTP)}</span>`:`<span style="display:flex;align-items:center;gap:6px"><i style="width:10px;height:10px;border-radius:3px;background:#52E0A6"></i>${esc(L.dMarginD)}</span>`}<span style="display:flex;align-items:center;gap:6px"><i style="width:14px;border-top:1px dashed #F4C45A"></i>${esc(mode==='amt'?L.dAvgRev:L.dMargin)}</span></div></div>`}
 function wireDaily(){const ch=$('#chart'),R=S.res;if(!ch||!R)return;const L=t(),tip=$('#tip'),xh=$('#xh');
   const clear=()=>{tip.classList.add('hide');xh.classList.add('hide');ch.querySelectorAll('.db.on,.pt.on').forEach(x=>x.classList.remove('on'));ch.classList.remove('hv')};
   ch.addEventListener('mousemove',e=>{const c=e.target.closest('[data-d]');if(!c){clear();return}const i=+c.dataset.d,dd=R.daily[i];const rb=ch.getBoundingClientRect(),cb=c.getBoundingClientRect(),x=cb.left-rb.left+cb.width/2;
@@ -1242,24 +1262,28 @@ function wireDaily(){const ch=$('#chart'),R=S.res;if(!ch||!R)return;const L=t(),
   ch.addEventListener('mouseleave',clear)}
 
 function shortName(s){s=String(s||'').replace(/[\(\[（【][^)\]）】]*[\)\]）】]/g,' ').replace(/\s+/g,' ').trim();const w=s.split(' ');let o='';for(const x of w){if((o+' '+x).trim().length>34)break;o=(o+' '+x).trim()}return o||s.slice(0,34)}
-function topCard(R,L){const mode=S.tmode||'profit',tot=R.tot;
-  let list=R.masters.slice();
+function topCard(R,L){const mode=S.tmode||'profit',tot=R.tot,ms=R.masters;
+  let list=ms.slice();
   if(mode==='profit')list.sort((a,b)=>b.net2-a.net2);else if(mode==='margin')list=list.filter(m=>m.rev>=100&&!m.missingSkus).sort((a,b)=>b.margin-a.margin);else list.sort((a,b)=>b.rev-a.rev);
-  list=list.slice(0,6);
-  const val=m=>mode==='profit'?m.net2:mode==='margin'?m.margin:m.rev;const mx=Math.max(...list.map(m=>Math.abs(val(m))),1e-9);
-  const share=list.reduce((s,m)=>s+m.net2,0)/(tot.net2||1);
+  list=list.slice(0,10);
+  const byP=ms.slice().sort((a,b)=>b.net2-a.net2),no1=byP[0]||{net2:0,code:'—',pname:'',margin:0};
+  const k=Math.min(6,byP.length),share=byP.slice(0,k).reduce((s,m)=>s+m.net2,0)/(tot.net2||1);
+  const win=ms.filter(m=>m.net2>0),lose=ms.filter(m=>m.net2<0),loseSum=lose.reduce((s,m)=>s+m.net2,0),nm=ms.length||1;
   const medal=['#F4C45A','#C9D1E4','#D99A6C'];
   const tabs=[['profit',L.tProfit],['margin',L.tMargin],['rev',L.tRev]].map(([k,l])=>`<button type="button" class="chip ${mode===k?'on':''}" data-tmode="${k}">${esc(l)}</button>`).join('');
-  const rows=list.map((m,i)=>{const v=val(m),neg=m.net2<0;const main=mode==='margin'?pc(m.margin):(mode==='rev'?f2(m.rev):f2(m.net2));
-    return `<a href="#skus" class="tp" style="--d:${i}" data-open="${esc(m.code)}"><span class="tr2" style="${i<3?`color:${medal[i]};border-color:${medal[i]}55;background:${medal[i]}14`:''}">${i+1}</span>
-    <span class="tm"><span class="tl"><span class="code">${esc(m.code)}</span><span class="tn">${esc(shortName(m.pname))}</span>${m.missingSkus?`<span class="wm" title="${esc(L.nNoCost(m.missingSkus))}">${ic('alert',13,'#F4C45A',2.2)}</span>`:''}</span>
-    <span class="tb"><span style="width:${(Math.abs(v)/mx*100).toFixed(1)}%;background:${neg?'#FF8F73':(mode==='rev'?'linear-gradient(90deg,#6F7FF0,#AEB8FF)':'linear-gradient(90deg,#23B57C,#63E8B0)')}"></span></span>
-    <span class="tx">${(mode==="rev"?[[L.tProfit,f2(m.net2),neg],[L.tMarginS,pc(m.margin),neg]]:mode==="margin"?[[L.tRevS,f0(m.rev),0],[L.tShareS,pc(m.net2/(tot.net2||1)),0]]:[[L.tMarginS,pc(m.margin),neg],[L.tShareS,pc(m.net2/(tot.net2||1)),0]]).map(([l,v,n])=>`<span>${esc(l)} <b class="num ${n?'neg':''}">${esc(v)}</b></span>`).join('')}</span></span>
-    <span class="tv num ${mode==='rev'?'':(neg?'neg':'pos')}">${esc(main)}</span></a>`}).join('');
-  return `<div class="hd" style="margin-bottom:10px"><div><h2>${esc(L.topT)}</h2><div class="sub">${esc(L.tSub)}</div></div><a href="#skus" class="btn" style="min-height:34px;padding:6px 12px;font-size:12.5px">${esc(L.all)}</a></div>
-  <div class="chips" style="padding:3px;align-self:flex-start;margin-bottom:8px">${tabs}</div>
-  <div class="tps">${rows}</div>
-  <div class="tfoot"><span class="dim">${esc(L.tFoot)}</span><b class="num pos">${pc(share)}</b><span class="tfb"><span style="width:${Math.max(0,Math.min(100,share*100)).toFixed(1)}%"></span></span></div>`}
+  const row=(m,i)=>{const neg=m.net2<0,main=mode==='margin'?pc(m.margin):(mode==='rev'?f2(m.rev):f2(m.net2)),sec=mode==='margin'?f0(m.rev):pc(m.margin);
+    return `<a href="#skus" class="trw" style="--d:${i}" data-open="${esc(m.code)}"><span class="rk" style="${i<3?`color:${medal[i]};border-color:${medal[i]}66;background:${medal[i]}18`:''}">${i+1}</span><span class="tnm"><b class="code">${esc(m.code)}</b><span>${esc(shortName(m.pname))}</span>${m.missingSkus?ic('alert',12,'#F4C45A',2.2):''}</span><span class="tsc num">${esc(sec)}</span><b class="num ${mode==='rev'?'':(neg?'neg':'pos')}">${esc(main)}</b></a>`};
+  const half=Math.ceil(list.length/2),colA=list.slice(0,half),colB=list.slice(half);
+  const hdr=`<div class="trh"><span>#</span><span>${esc(L.tProd)}</span><span>${esc(mode==='margin'?L.tRevS:L.tMarginS)}</span><span>${esc(mode==='margin'?L.tMargin:mode==='rev'?L.tRev:L.tProfit)}</span></div>`;
+  return `${bgWaves('rgba(244,196,90,.04)','rgba(64,217,154,.04)')}<div class="xhd"><div><span class="xtag">RANK</span><h2>${esc(L.topT)}</h2></div><a href="#skus" class="xlink">${esc(L.all)} ${ic('chev',12)}</a></div>
+  <div class="cx1 cxgd">${gauge2(Math.max(0,Math.min(1,share)),L.tTopShare(k))}
+    <div class="cxn"><div class="cxe"><span>${esc(L.tNo1)}</span><em>TOP PRODUCT</em></div><div class="xv num big ${no1.net2<0?'neg':'pos'}"><small>RM</small><span data-count="${no1.net2}">${f2(no1.net2)}</span></div><div class="xsub"><b class="code">${esc(no1.code)}</b> ${esc(shortName(no1.pname||''))} · ${esc(L.marginL)} <span class="num">${pc(no1.margin)}</span></div></div>
+    <div class="cxs">
+      <div class="cxr"><div class="cxh"><i class="sd" style="background:#52E0A6;color:#52E0A6"></i><span>${esc(L.tWin)}</span><b class="num pos">${win.length}</b></div><div class="cxt"><span class="cxbar"><i style="width:${(win.length/nm*100).toFixed(1)}%;background:linear-gradient(90deg,#23B57C,#7CF0C5)"></i></span><em class="num">${esc(L.tOfAll(ms.length))}</em></div></div>
+      <div class="cxr"><div class="cxh"><i class="sd" style="background:#FF8F73;color:#FF8F73"></i><span>${esc(L.tLose)}</span><b class="num ${lose.length?'neg':'dimv'}">${lose.length}</b></div><div class="cxt"><span class="cxbar"><i style="width:${(lose.length/nm*100).toFixed(1)}%;background:linear-gradient(90deg,#C95A42,#FF8F73)"></i></span><em class="num">${lose.length?`RM ${f2(loseSum)}`:esc(L.tNoLoss)}</em></div></div>
+    </div></div>
+  <div class="sech"><div><span>${esc(L.tSub)}</span><em>TOP ${list.length}</em></div><div class="chips xchips">${tabs}</div></div>
+  <div class="stc trk"><div class="scol">${hdr}${colA.map((m,i)=>row(m,i)).join('')}</div>${colB.length?`<div class="scol">${hdr}${colB.map((m,i)=>row(m,i+half)).join('')}</div>`:''}</div>`}
 function savedSec(){const L=t();if(!Saves.loaded||!Saves.list.length)return '';
   return `<section class="hsv" id="savedsec"><div class="hd" style="margin-bottom:14px;align-items:flex-end"><div><h2 style="font-size:18px">${esc(L.savedT)} <span class="chip-s" style="background:var(--accbg);color:var(--acc2);margin-left:6px">${Saves.list.length}</span></h2><div class="sub">${esc(Saves.mode==='cloud'?L.savedCloudNote:(Saves.mode==='local'?L.savedLocalNote:L.savedNone))}</div></div></div>${vSaved().replace(/^<p[\s\S]*?<\/p>/,'')}</section>`}
 function toTop(){try{window.scrollTo(0,0);document.documentElement.scrollTop=0;document.body.scrollTop=0;const a=document.querySelector('.app');if(a&&a.scrollIntoView)a.scrollIntoView({block:'start',inline:'nearest',behavior:'instant'})}catch(e){}}
@@ -1621,19 +1645,19 @@ Object.assign(X.en,{fmapT:n=>`${n} columns paired by keyword`,'fm_Deal Price':'P
 
 /* ---------- overview hero: how revenue turns into profit, and how much is already in hand ---------- */
 Object.assign(X.zh,{hfT:'本月营销',hfS:'营业额一步步扣掉费用和成本，剩下的就是真实净利',hfDed:'扣平台、联盟、广告费用',hfCost:'扣货品成本',hfOf:p=>`占营业额 ${p}`,
-  hfPlat:'平台',hfAff:'联盟',hfAds:'广告',pyT:'钱到账了吗',pyS:'营业额里，已经结算到账和还没结算的部分',pyPaidRev:'已结算订单',pyPendRev:'未结算订单',
+  hfPlat:'平台',hfAff:'联盟',hfAds:'广告',pyT:'回款与净赚',pyS:'营业额里，已经结算到账和还没结算的部分',pyPaidRev:'已结算订单',pyPendRev:'未结算订单',
   rcT:'净赚 · 已经落袋',rcPaid:'已到账金额（已扣平台费用）',rcCost:'这些订单的货品成本',rcAds:'店铺广告（GMV）',rcReimb:'平台补偿',rcNet:'净赚',
   rcRev:'营业额',rcFees:'平台费用、联盟、广告',rcAll:'Shopee 完成订单都已结算，全部算已到账',pyAllPaid:'全部已结算'});
 Object.assign(X.en,{hfT:'This month’s sales',hfS:'Revenue minus fees and cost of goods, step by step — what is left is true profit',hfDed:'Platform, affiliate & ad fees',hfCost:'Cost of goods',hfOf:p=>`${p} of revenue`,
-  hfPlat:'Platform',hfAff:'Affiliate',hfAds:'Ads',pyT:'Has the money arrived?',pyS:'How much of revenue is settled and paid out vs not yet',pyPaidRev:'Settled orders',pyPendRev:'Not settled',
+  hfPlat:'Platform',hfAff:'Affiliate',hfAds:'Ads',pyT:'Cash & Net Earnings',pyS:'How much of revenue is settled and paid out vs not yet',pyPaidRev:'Settled orders',pyPendRev:'Not settled',
   rcT:'Net earned · in hand',rcPaid:'Received (after platform fees)',rcCost:'Cost of goods for these orders',rcAds:'Shop ads (GMV)',rcReimb:'Platform reimbursement',rcNet:'Net earned',
   rcRev:'Revenue',rcFees:'Platform, affiliate & ad fees',rcAll:'Shopee completed orders are all settled — everything counts as received',pyAllPaid:'All settled'});
-function smooth(vals,W,H,pad){if(vals.length<2)return null;const mx=Math.max(...vals),mn=Math.min(0,...vals),sp=(mx-mn)||1;
+function smoothV(vals,W,H,pad){if(vals.length<2)return null;const mx=Math.max(...vals),mn=Math.min(0,...vals),sp=(mx-mn)||1;
   const P=vals.map((v,i)=>[i/(vals.length-1)*W,H-pad-(v-mn)/sp*(H-pad*2)]);let d='M'+P[0][0].toFixed(1)+' '+P[0][1].toFixed(1);
   for(let i=0;i<P.length-1;i++){const p0=P[i-1]||P[i],p1=P[i],p2=P[i+1],p3=P[i+2]||p2;
     d+=` C${(p1[0]+(p2[0]-p0[0])/6).toFixed(1)} ${(p1[1]+(p2[1]-p0[1])/6).toFixed(1)} ${(p2[0]-(p3[0]-p1[0])/6).toFixed(1)} ${(p2[1]-(p3[1]-p1[1])/6).toFixed(1)} ${p2[0].toFixed(1)} ${p2[1].toFixed(1)}`}
   return {d,last:P[P.length-1]}}
-function wave(vals,color,id,H){H=H||46;const W=240,s=smooth(vals,W,H,4);if(!s)return '';
+function wave(vals,color,id,H){H=H||46;const W=240,s=smoothV(vals,W,H,4);if(!s)return '';
   return `<svg class="xwave" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${color}" stop-opacity=".35"/><stop offset="1" stop-color="${color}" stop-opacity="0"/></linearGradient></defs><path d="${s.d} L${W} ${H} L0 ${H}Z" fill="url(#${id})"/><path class="ln" d="${s.d}" fill="none" stroke="${color}" stroke-width="1.6" vector-effect="non-scaling-stroke"/><circle cx="${s.last[0]}" cy="${s.last[1]}" r="2.6" fill="${color}" class="dotp"/></svg>`}
 function bgWaves(c1,c2){return `<svg class="xbgw" viewBox="0 0 1200 120" preserveAspectRatio="none" aria-hidden="true"><path class="w1" d="M0 70 C150 30 300 110 450 70 C600 30 750 110 900 70 C1050 30 1200 110 1350 70 C1500 30 1650 110 1800 70 L1800 120 L0 120Z" fill="${c1}"/><path class="w2" d="M0 84 C200 54 400 114 600 84 C800 54 1000 114 1200 84 C1400 54 1600 114 1800 84 L1800 120 L0 120Z" fill="${c2}"/></svg>`}
 function gauge(pct,val,label){const r=74,C=2*Math.PI*r,p=Math.max(0,Math.min(1,pct)),ticks=Array.from({length:60},(_,i)=>{const a=i/60*2*Math.PI-Math.PI/2,r1=88,r2=i%5?92:95;return `<line x1="${(100+r1*Math.cos(a)).toFixed(1)}" y1="${(100+r1*Math.sin(a)).toFixed(1)}" x2="${(100+r2*Math.cos(a)).toFixed(1)}" y2="${(100+r2*Math.sin(a)).toFixed(1)}" class="${i/60<=p?'on':''}"/>`}).join('');
@@ -1698,21 +1722,21 @@ function payStrip(R){const L=t(),tt=R.tot,tk=R.plat==='tiktok',rv=tt.rev||1;
         <div class="cxr"><div class="cxh"><i class="sd" style="background:#52E0A6;color:#52E0A6"></i><span>${esc(tk?L.paidAmtT:L.paidT)}</span><b class="num pos">${f2(paidRev)}</b></div><div class="cxt"><span class="cxbar"><i style="width:${(pr*100).toFixed(2)}%;background:linear-gradient(90deg,#23B57C,#7CF0C5)"></i></span><em class="num">${f0(tk?tt.paidOrders:tt.orders)} ${ord} · ${pc(pr)}</em></div></div>
         <div class="cxr"><div class="cxh"><i class="sd" style="background:#F4C45A;color:#F4C45A"></i><span>${esc(tk?L.pendAmtT:L.pendT2)}</span><b class="num ${pendRev?'warnv':'dimv'}">${f2(pendRev)}</b></div><div class="cxt"><span class="cxbar"><i class="pend" style="width:${((1-pr)*100).toFixed(2)}%"></i></span><em class="num">${tk?`${f0(tt.unsetOrders)} ${ord} · ${pc(1-pr)}`:esc(L.pyAllPaid)}</em></div></div>
       </div></div>
-    <div class="xwf2"><div class="xl"><span>${esc(L.wfT)}</span><em>FULL BREAKDOWN</em></div>${wf}</div>
+    <div class="xwf2"><div class="xl"><span>${esc(L.wfT2)}</span><em>FULL BREAKDOWN</em></div>${wf}</div>
     ${bgWaves('rgba(64,217,154,.05)','rgba(47,176,255,.04)')}</section>`}
 
 Object.assign(X.zh,{ofRevS:'占营业额'});Object.assign(X.en,{ofRevS:'of revenue'});
 
 Object.assign(X.zh,{compT:'每 RM 100 营业额的去向'});Object.assign(X.en,{compT:'Where every RM 100 of revenue goes'});
 
-Object.assign(X.zh,{paidRate:'已到账比例',rnS2:'已到账的钱，扣掉这些订单的成本后真正落袋',wfT:'净赚怎么算',pyProg:'订单金额到账进度'});Object.assign(X.en,{paidRate:'received',rnS2:'Money already paid out, after the cost of those orders',wfT:'How net earned adds up',pyProg:'Settlement progress of order value'});
+Object.assign(X.zh,{nDays:n=>`${n} 天`,dAvgNetS:'每天平均真正赚到的钱（已扣成本）',dPeak:'最高',tNo1:'第 1 名产品净利',tTopShare:k=>`前 ${k} 名占净利`,tWin:'赚钱的产品',tLose:'亏钱的产品',tOfAll:n=>`共 ${n} 个产品`,tNoLoss:'没有亏钱的产品',tProd:'产品',paidRate:'已到账比例',rnS2:'已到账的钱，扣掉这些订单的成本后真正落袋',wfT2:'净赚怎么算',pyProg:'订单金额到账进度'});Object.assign(X.en,{nDays:n=>`${n} days`,dAvgNetS:'True profit earned per day on average (after cost)',dPeak:'Peak',tNo1:'No. 1 product profit',tTopShare:k=>`Top ${k} share`,tWin:'Profitable products',tLose:'Loss-making products',tOfAll:n=>`${n} products in total`,tNoLoss:'No loss-making products',tProd:'Product',paidRate:'received',rnS2:'Money already paid out, after the cost of those orders',wfT2:'How net earned adds up',pyProg:'Settlement progress of order value'});
 
 Object.assign(X.zh,{wSH:'运费',wU2:'广告佣金',wU3:'广告费',stGross:tk=>tk?'已结算订单金额':'营业额',stGrossS:(tk,n)=>tk?`${n} 单 · 客人付的商品金额，还没扣费用`:`${n} 单 · 成交价 × 数量`,stFeeS:'平台结算时直接扣除',
   stPayout:'实际到账（TikTok 打款）',stPayoutS:'= income 表的结算金额，进到店铺余额',stNetB:'净利 · 未扣成本',stNetBS:'扣完平台费用后',stCostS:'这些订单的商品进货成本',stAdsS:'直接从店铺余额扣的广告费',stReimbS:'平台补偿到余额',stNetS:'真正落袋的利润',
-  stGrpFee:tk=>tk?'TikTok 扣的费用':'Shopee 扣的费用',stGrpCost:'你自己的成本',wfT:'完整扣费过程',paidAmtT:'已结算订单金额',pendAmtT:'未结算订单金额'});
+  stGrpFee:tk=>tk?'TikTok 扣的费用':'Shopee 扣的费用',stGrpCost:'你自己的成本',wfT2:'完整扣费过程',paidAmtT:'已结算订单金额',pendAmtT:'未结算订单金额'});
 Object.assign(X.en,{wSH:'Shipping',wU2:'Ads commission',wU3:'Ads',stGross:tk=>tk?'Settled order value':'Revenue',stGrossS:(tk,n)=>tk?`${n} orders · what buyers paid, before fees`:`${n} orders · price × qty`,stFeeS:'deducted by the platform at settlement',
   stPayout:'Paid out by TikTok',stPayoutS:'= settlement amount in the income file',stNetB:'Net before cost',stNetBS:'after platform fees',stCostS:'cost of goods for these orders',stAdsS:'taken from the shop balance',stReimbS:'added to the balance',stNetS:'profit actually in hand',
-  stGrpFee:tk=>tk?'Deducted by TikTok':'Deducted by Shopee',stGrpCost:'Your own costs',wfT:'Full deduction breakdown',paidAmtT:'Settled order value',pendAmtT:'Unsettled order value'});
+  stGrpFee:tk=>tk?'Deducted by TikTok':'Deducted by Shopee',stGrpCost:'Your own costs',wfT2:'Full deduction breakdown',paidAmtT:'Settled order value',pendAmtT:'Unsettled order value'});
 
 Object.assign(X.zh,{stNetOf:p=>`= 订单金额的 ${p}`,stLegFee:tk=>tk?'TikTok 扣费':'平台扣费'});Object.assign(X.en,{stNetOf:p=>`= ${p} of order value`,stLegFee:tk=>tk?'TikTok fees':'Platform fees'});
 
