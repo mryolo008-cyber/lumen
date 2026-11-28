@@ -493,7 +493,7 @@ a.brand{text-decoration:none;color:inherit;cursor:pointer;border-radius:12px;tra
 @media (max-width:620px){.xhero{flex-direction:column;align-items:stretch;text-align:left}.xgauge{margin:0 auto}.xgrid{grid-template-columns:minmax(0,1fr)}.xcash{grid-template-columns:minmax(0,1fr)}.xliq{margin:0 auto}.xpanel{padding:18px}.xv.big{font-size:32px}.xmeta{display:none}}
 .xpay .xhero{background:linear-gradient(135deg,rgba(64,217,154,.12),rgba(35,181,124,.03))}
 .g2 .trk.pend{stroke:rgba(244,196,90,.28);stroke-dasharray:3 3}.g2 .tk line.pd{stroke:rgba(244,196,90,.35)}.g2 .tk line.on{stroke:rgba(124,240,197,.8)}
-.xc.xwf{grid-column:1/-1;padding-bottom:14px}
+.xc.xwf{grid-column:1/-1;padding:16px 18px 14px;margin-top:16px}
 .xwtop{display:flex;align-items:baseline;justify-content:space-between;margin-top:12px;font-size:12.5px;color:var(--mut)}.xwtop b{font:600 15px 'Geist Mono';color:var(--ink)}
 .xwbar{display:flex;height:10px;border-radius:6px;overflow:hidden;gap:2px;margin-top:8px;background:rgba(255,255,255,.04)}.xwbar span{display:block;height:100%;animation:wfin 1s cubic-bezier(.2,.8,.2,1) both}
 .xwrows{display:grid;grid-template-columns:repeat(var(--n,4),minmax(0,1fr));gap:8px 18px;margin-top:12px}
@@ -509,6 +509,40 @@ a.brand{text-decoration:none;color:inherit;cursor:pointer;border-radius:12px;tra
 .xs.pend{background:repeating-linear-gradient(135deg,#F4C45A 0 6px,#C9962F 6px 12px)}
 .xflat{height:42px;margin-top:10px;border-bottom:1px dashed rgba(255,255,255,.1)}
 .sd{display:inline-block;width:7px;height:7px;border-radius:50%;box-shadow:0 0 8px currentColor}
+.stc{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;margin-top:10px}
+.cx1{display:grid;grid-template-columns:auto minmax(0,1fr) minmax(0,1.05fr);gap:26px;align-items:center;padding:18px 24px;border-radius:16px;background:linear-gradient(120deg,rgba(64,217,154,.12),rgba(35,181,124,.03) 55%,rgba(10,13,22,.2));border:1px solid rgba(64,217,154,.22)}
+.cx1 .xgauge{width:112px;height:112px}.cx1 .xgauge .gp{font-size:20px}.cx1 .xgauge .gl{font-size:10px}
+.cxe{display:flex;align-items:baseline;gap:10px;font-size:13px;color:var(--ink2,#C9D2E3)}.cxe em{font-style:normal;font-size:10px;letter-spacing:.16em;color:var(--dim)}
+.cxn .xv.big{margin:4px 0 2px}
+.cxw{display:inline-flex;align-items:flex-start;gap:6px;margin-top:8px;padding:4px 10px;border-radius:10px;background:rgba(244,196,90,.09);border:1px solid rgba(244,196,90,.25);color:#F4C45A;font-size:12px}
+.cxs{display:flex;flex-direction:column;gap:16px;padding-left:26px;border-left:1px solid rgba(255,255,255,.08)}
+.cxh{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--dim)}.cxh span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.cxh b{margin-left:auto;font:600 20px 'Geist';letter-spacing:-.01em}.cxh b.pos{color:#5BE8B0}.cxh b.warnv{color:var(--warn)}.cxh b.dimv{color:var(--dim)}
+.cxt{display:flex;align-items:center;gap:12px;margin-top:7px}.cxt em{font-style:normal;font-size:11.5px;color:var(--dim);white-space:nowrap}
+.cxbar{flex:1;height:6px;border-radius:99px;background:rgba(255,255,255,.06);overflow:hidden;display:block}.cxbar i{display:block;height:100%;border-radius:99px}
+.cxbar i.pend{background:repeating-linear-gradient(135deg,#F4C45A 0 6px,#C99A2E 6px 12px)}
+@media (max-width:1100px){.cx1{grid-template-columns:auto minmax(0,1fr)}.cxs{grid-column:1/-1;padding-left:0;border-left:0;padding-top:14px;border-top:1px solid rgba(255,255,255,.08)}}
+@media (max-width:620px){.cx1{grid-template-columns:auto minmax(0,1fr);gap:16px;padding:16px}.cx1 .xgauge{width:84px;height:84px}.cx1 .xgauge .gp{font-size:16px}.cxn .xv.big{font-size:30px}.cxh b{font-size:17px}}
+.xwf2{margin-top:16px}
+.sbx.snetr{margin-top:auto;background:linear-gradient(90deg,rgba(64,217,154,.18),rgba(64,217,154,.05));border:1px solid rgba(64,217,154,.35)}.sbx.snetr b{color:#5BE8B0;font-size:16px}.sbx.snetr .sbl{color:#EAFBF4}
+.scol .sbx.snetr{margin-top:8px}
+@media (max-width:1100px){.cx1{grid-template-columns:auto minmax(0,1fr)}.cxs{grid-column:1/-1}}
+.scol{display:flex;flex-direction:column;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.02);border:1px solid var(--line)}
+.sbx{display:grid;grid-template-columns:14px minmax(0,1fr) auto;gap:8px;align-items:center;padding:7px 9px;border-radius:9px;background:rgba(139,155,255,.08)}
+.sbx.s1{background:rgba(195,203,255,.09)}.sbo{font:600 12px 'Geist Mono';color:var(--dim);text-align:center}
+.sbl{font-size:12.5px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sbs{font-size:10.5px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sbx b{font:600 14px 'Geist Mono';color:var(--ink)}
+.sgh{display:flex;justify-content:space-between;align-items:baseline;font:600 10px 'Geist Mono';letter-spacing:.1em;color:var(--dim);padding:9px 4px 3px;text-transform:uppercase}.sgh b{font:600 11.5px 'Geist Mono';letter-spacing:0}
+.sr{display:grid;grid-template-columns:12px 7px minmax(0,1fr) 44px 74px;gap:7px;align-items:center;padding:4px;font-size:12px;border-bottom:1px solid rgba(255,255,255,.035)}.sr:last-child{border-bottom:0}
+.sr .so{font:500 11px 'Geist Mono';color:var(--dim);text-align:center}.sr i{width:7px;height:7px;border-radius:2px}.sr .sn{color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sr .sp{font:500 10.5px 'Geist Mono';color:var(--dim);text-align:right}.sr b{font:500 12px 'Geist Mono';text-align:right}
+b.neg,.sgh b.neg{color:var(--neg)}b.cst{color:#F4C45A}b.acc{color:#9AA6FF}
+.snet{justify-content:center;background:linear-gradient(135deg,rgba(64,217,154,.14),rgba(64,217,154,.03));border-color:rgba(64,217,154,.35)}
+.snl{display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;color:var(--ink)}.snv{font:600 28px 'Geist';color:#5BE8B0;letter-spacing:-.02em;text-shadow:0 0 22px rgba(64,217,154,.4);margin-top:4px}
+.sns{font-size:11px;color:var(--dim)}.scmp{display:flex;height:7px;border-radius:4px;overflow:hidden;gap:2px;margin-top:12px;background:rgba(255,255,255,.04)}.scmp span{display:block}
+.scl{display:flex;flex-direction:column;gap:3px;margin-top:8px;font-size:11px;color:var(--mut)}.scl span{display:flex;align-items:center;gap:6px}.scl i{width:7px;height:7px;border-radius:2px}.scl b{margin-left:auto;font:500 11px 'Geist Mono';color:var(--ink)}
+
+@media (max-width:620px){.stc{grid-template-columns:minmax(0,1fr)}}
 @media (max-width:900px){.xwrows{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:620px){.xwr{grid-template-columns:96px minmax(0,1fr) 78px}}
 @media (prefers-reduced-motion:reduce){.xwt i{animation:none!important}}
@@ -1636,23 +1670,35 @@ function payStrip(R){const L=t(),tt=R.tot,tk=R.plat==='tiktok',rv=tt.rev||1;
   const dk=Object.keys(days).sort(),sp=dk.map(d=>days[d].p),su=dk.map(d=>days[d].u);
   const terms=tk?[[L.rnPaid,tt.paidAmt,'','#52E0A6'],[L.rnCost,tt.setCost,'−','#F4C45A'],[L.rnAds,tt.shopAds,'−','#FF5C8A']].concat(tt.reimb?[[L.rnReimb,tt.reimb,'+','#9AA6FF']]:[])
     :[[L.rnRev,tt.rev,'','#8B9BFF'],[L.rnFees,tt.ded,'−','#FF8F73'],[L.rnCost,tt.cost,'−','#F4C45A']];
-  const base=terms[0][1]||1,parts=terms.slice(1).filter(x=>x[2]==='−'&&x[1]>0).concat([[L.rcNet,Math.max(v,0),'=','#40D99A']]),ptot=parts.reduce((s,x)=>s+x[1],0)||1;
-  const wf=`<div class="xwtop"><span class="xwl0">${esc(terms[0][0])}</span><b class="num">RM ${f2(base)}</b></div>
-    <div class="xwbar">${parts.map(([l,x,s,c])=>`<span style="flex:${(x/ptot).toFixed(5)};background:linear-gradient(180deg,${c},${c}bb)" title="${esc(l)} ${f2(x)}"></span>`).join('')}</div>
-    <div class="xwrows" style="--n:${terms.slice(1).filter(x=>x[1]).length+1}">${terms.slice(1).filter(x=>x[1]).map(([l,x,s,c])=>`<div class="xwr"><i style="background:${c}"></i><span class="xwl">${esc(l)}</span><span class="xwp num">${pc(x/base)}</span><b class="num ${s==='−'?'neg':'acc'}">${s}${f2(x)}</b></div>`).join('')}
-    <div class="xwr tot"><i style="background:#40D99A;box-shadow:0 0 8px #40D99A"></i><span class="xwl">${esc(L.rcNet)}</span><span class="xwp num">${pc(v/base)}</span><b class="num">${f2(v)}</b></div></div>`;
+  // full deduction statement: order amount → every platform fee → payout → cost & shop ads → net earned
+  const SL=R.lines.filter(l=>tk?!l.unset:true),sum=k=>SL.reduce((s,l)=>s+(l[k]||0),0);
+  const gross=sum('amt'),fA=[[L.wAN,sum('anA'),'#FF8F73'],[L.wAO,sum('aoA'),'#FF9F80'],[L.wAP,sum('apA'),'#FFB49F']].concat(tk?[[L.wSH,sum('shA'),'#F2A07E']]:[],[[L.wAI,sum('ai'),'#B58CFF'],[tk?L.wU2:L.wU3,sum('u'),'#FF5C8A']]);
+  const feeSum=fA.reduce((s,x)=>s+x[1],0),payout=tk?tt.paidAmt:gross-feeSum,cogs=tk?tt.setCost:tt.cost;
+  const steps=[['start',L.stGross(tk),gross,'',L.stGrossS(tk,f0(tk?tt.paidOrders:tt.orders)),'#8B9BFF']];
+  fA.forEach(([l,x,c])=>{if(x)steps.push(['fee',l,x,'−',L.stFeeS,c])});
+  steps.push(['sub',tk?L.stPayout:L.stNetB,payout,'=',tk?L.stPayoutS:L.stNetBS,'#C3CBFF']);
+  if(cogs)steps.push(['cost',L.rnCost,cogs,'−',L.stCostS,'#F4C45A']);
+  if(tk&&tt.shopAds)steps.push(['cost',L.rcAds,tt.shopAds,'−',L.stAdsS,'#FF5C8A']);
+  if(tk&&tt.reimb)steps.push(['plus',L.rnReimb,tt.reimb,'+',L.stReimbS,'#9AA6FF']);
+  steps.push(['end',L.rcNet,v,'=',L.stNetS,'#40D99A']);
+  const g=gross||1,feeRows=steps.filter(s=>s[0]==='fee'),ownRows=steps.filter(s=>s[0]==='cost'||s[0]==='plus'),ownSum=ownRows.reduce((s,x)=>s+(x[0]==='plus'?-x[2]:x[2]),0);
+  const row=([k,l,x,s,sub,c])=>`<div class="sr" title="${esc(sub)}"><span class="so">${k==='plus'?'+':'−'}</span><i style="background:${c}"></i><span class="sn">${esc(l)}</span><span class="sp num">${pc(x/g)}</span><b class="num ${k==='plus'?'acc':k==='cost'?'cst':'neg'}">${f2(x)}</b></div>`;
+  const box=(cls,o,l,x,sub)=>`<div class="sbx ${cls}"><span class="sbo num">${o}</span><div><div class="sbl">${esc(l)}</div><div class="sbs">${esc(sub)}</div></div><b class="num">${f2(x)}</b></div>`;
+  const wf=`<div class="stc">
+    <div class="scol">${box('s0','',steps[0][1],gross,steps[0][4])}<div class="sgh"><span>${esc(L.stGrpFee(tk))}</span><b class="num neg">−${f2(feeSum)}</b></div>${feeRows.map(row).join('')}</div>
+    <div class="scol">${box('s1','=',tk?L.stPayout:L.stNetB,payout,tk?L.stPayoutS:L.stNetBS)}<div class="sgh"><span>${esc(L.stGrpCost)}</span><b class="num cst">−${f2(ownSum)}</b></div>${ownRows.map(row).join('')}
+      <div class="sbx snetr"><span class="sbo num">=</span><div><div class="sbl">${esc(L.rcNet)}</div><div class="sbs">${esc(L.stNetOf(pc(v/g)))}</div></div><b class="num">${f2(v)}</b></div></div></div>`;
   const notes=tk?[tt.setMissing?L.rnMiss(tt.setMissing):''].filter(Boolean):[L.rcAll];
   const cell=(k,lab,en,val,sub,cls,wv)=>`<div class="xc ${k}"><div class="xl"><span>${lab}</span><em>${en}</em></div><div class="xv num ${cls}"><small>RM</small><span data-count="${val}">${f2(val)}</span></div><div class="xsub">${sub}</div>${wv}</div>`;
   const ord=lang==='zh'?'单':'orders';
   return `<section class="card xpanel xpay"><div class="xhd"><div><span class="xtag">CASH</span><h2>${esc(L.pyT)}</h2></div>${tk&&pendRev?`<a href="#payout" data-act="pend" class="xlink">${esc(L.payT)} ${ic('chev',12)}</a>`:`<span class="xmeta num">${esc(L.pyAllPaid)}</span>`}</div>
-    <div class="xmain"><div class="xhero">${gauge2(pr,L.paidRate)}<div class="xhv"><div class="xl"><span>${esc(L.rcNet)}</span><em>NET IN HAND</em></div><div class="xv num big ${v<0?'neg':'pos'}"><small>RM</small><span data-count="${v}">${f2(v)}</span></div>
-      <div class="xsub" style="margin-top:4px">${esc(L.rnS2)}</div>${notes.map(x=>`<div class="xw" style="margin-top:6px">${ic('alert',11,'#F4C45A',2.4)}${esc(x)}</div>`).join('')}${wave(sp,'#40D99A','wv6',50)}</div></div>
-    <div class="xgrid">${cell('pd',`<i class="sd" style="background:#52E0A6;color:#52E0A6"></i>${esc(L.paidT)}`,'SETTLED',paidRev,`<span class="num">${f0(tk?tt.paidOrders:tt.orders)}</span> ${ord} · <span class="num">${pc(pr)}</span>`,'pos',wave(sp,'#52E0A6','wv7'))}
-      ${cell('pn',`<i class="sd" style="background:#F4C45A;color:#F4C45A"></i>${esc(L.pendT2)}`,'PENDING',pendRev,tk?`<span class="num">${f0(tt.unsetOrders)}</span> ${ord} · <span class="num">${pc(1-pr)}</span>`:esc(L.pyAllPaid),pendRev?'warnv':'dimv',pendRev?wave(su,'#F4C45A','wv8'):'<div class="xflat"></div>')}
-      <div class="xc xwf"><div class="xl"><span>${esc(L.wfT)}</span><em>BREAKDOWN</em></div><div class="xwb">${wf}</div></div></div></div>
-    <div class="xcomp"><div class="xl" style="margin-bottom:10px"><span>${esc(L.pyProg)}</span><em>SETTLEMENT</em></div>
-      <div class="xbar"><span class="xs xtp" style="flex:${pr.toFixed(5)};background:linear-gradient(180deg,#7CF0C5,#23B57C)"></span>${pendRev?`<span class="xs pend" style="flex:${(1-pr).toFixed(5)}"></span>`:''}</div>
-      <div class="xleg"><span><i style="background:#52E0A6"></i>${esc(L.paidT)}<b class="num">RM ${f2(paidRev)}</b></span><span><i style="background:#F4C45A"></i>${esc(L.pendT2)}<b class="num">RM ${f2(pendRev)}</b></span></div></div>
+    <div class="cx1">${gauge2(pr,L.paidRate)}
+      <div class="cxn"><div class="cxe"><span>${esc(L.rcNet)}</span><em>NET IN HAND</em></div><div class="xv num big ${v<0?'neg':'pos'}"><small>RM</small><span data-count="${v}">${f2(v)}</span></div><div class="xsub">${esc(L.rnS2)}</div>${notes.map(x=>`<div class="cxw">${ic('alert',11,'#F4C45A',2.4)}${esc(x)}</div>`).join('')}</div>
+      <div class="cxs">
+        <div class="cxr"><div class="cxh"><i class="sd" style="background:#52E0A6;color:#52E0A6"></i><span>${esc(tk?L.paidAmtT:L.paidT)}</span><b class="num pos">${f2(paidRev)}</b></div><div class="cxt"><span class="cxbar"><i style="width:${(pr*100).toFixed(2)}%;background:linear-gradient(90deg,#23B57C,#7CF0C5)"></i></span><em class="num">${f0(tk?tt.paidOrders:tt.orders)} ${ord} · ${pc(pr)}</em></div></div>
+        <div class="cxr"><div class="cxh"><i class="sd" style="background:#F4C45A;color:#F4C45A"></i><span>${esc(tk?L.pendAmtT:L.pendT2)}</span><b class="num ${pendRev?'warnv':'dimv'}">${f2(pendRev)}</b></div><div class="cxt"><span class="cxbar"><i class="pend" style="width:${((1-pr)*100).toFixed(2)}%"></i></span><em class="num">${tk?`${f0(tt.unsetOrders)} ${ord} · ${pc(1-pr)}`:esc(L.pyAllPaid)}</em></div></div>
+      </div></div>
+    <div class="xwf2"><div class="xl"><span>${esc(L.wfT)}</span><em>FULL BREAKDOWN</em></div>${wf}</div>
     ${bgWaves('rgba(64,217,154,.05)','rgba(47,176,255,.04)')}</section>`}
 
 Object.assign(X.zh,{ofRevS:'占营业额'});Object.assign(X.en,{ofRevS:'of revenue'});
@@ -1660,6 +1706,15 @@ Object.assign(X.zh,{ofRevS:'占营业额'});Object.assign(X.en,{ofRevS:'of reven
 Object.assign(X.zh,{compT:'每 RM 100 营业额的去向'});Object.assign(X.en,{compT:'Where every RM 100 of revenue goes'});
 
 Object.assign(X.zh,{paidRate:'已到账比例',rnS2:'已到账的钱，扣掉这些订单的成本后真正落袋',wfT:'净赚怎么算',pyProg:'订单金额到账进度'});Object.assign(X.en,{paidRate:'received',rnS2:'Money already paid out, after the cost of those orders',wfT:'How net earned adds up',pyProg:'Settlement progress of order value'});
+
+Object.assign(X.zh,{wSH:'运费',wU2:'广告佣金',wU3:'广告费',stGross:tk=>tk?'已结算订单金额':'营业额',stGrossS:(tk,n)=>tk?`${n} 单 · 客人付的商品金额，还没扣费用`:`${n} 单 · 成交价 × 数量`,stFeeS:'平台结算时直接扣除',
+  stPayout:'实际到账（TikTok 打款）',stPayoutS:'= income 表的结算金额，进到店铺余额',stNetB:'净利 · 未扣成本',stNetBS:'扣完平台费用后',stCostS:'这些订单的商品进货成本',stAdsS:'直接从店铺余额扣的广告费',stReimbS:'平台补偿到余额',stNetS:'真正落袋的利润',
+  stGrpFee:tk=>tk?'TikTok 扣的费用':'Shopee 扣的费用',stGrpCost:'你自己的成本',wfT:'完整扣费过程',paidAmtT:'已结算订单金额',pendAmtT:'未结算订单金额'});
+Object.assign(X.en,{wSH:'Shipping',wU2:'Ads commission',wU3:'Ads',stGross:tk=>tk?'Settled order value':'Revenue',stGrossS:(tk,n)=>tk?`${n} orders · what buyers paid, before fees`:`${n} orders · price × qty`,stFeeS:'deducted by the platform at settlement',
+  stPayout:'Paid out by TikTok',stPayoutS:'= settlement amount in the income file',stNetB:'Net before cost',stNetBS:'after platform fees',stCostS:'cost of goods for these orders',stAdsS:'taken from the shop balance',stReimbS:'added to the balance',stNetS:'profit actually in hand',
+  stGrpFee:tk=>tk?'Deducted by TikTok':'Deducted by Shopee',stGrpCost:'Your own costs',wfT:'Full deduction breakdown',paidAmtT:'Settled order value',pendAmtT:'Unsettled order value'});
+
+Object.assign(X.zh,{stNetOf:p=>`= 订单金额的 ${p}`,stLegFee:tk=>tk?'TikTok 扣费':'平台扣费'});Object.assign(X.en,{stNetOf:p=>`= ${p} of order value`,stLegFee:tk=>tk?'TikTok fees':'Platform fees'});
 
 /* ---------- styled Excel exports (xlsx-js-style) ---------- */
 Object.assign(X.zh,{expOk:'营销报告已导出',xT:'Lumen 真利 · 营销报告',xPer:'期间',xGen:'生成于',xKRev:'营业额',xKNet:'真实净利',xKMg:'利润率',xKOrd:'订单',xKUnits:'销量',
