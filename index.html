@@ -433,6 +433,36 @@ a.brand{text-decoration:none;color:inherit;cursor:pointer;border-radius:12px;tra
 .fmap{margin-top:6px;font-size:11.5px;color:var(--mut)}.fmap summary{cursor:pointer;color:#9AA6FF;list-style:none;display:inline-flex;align-items:center;gap:6px}.fmap summary::-webkit-details-marker{display:none}.fmap summary:before{content:'▸';font-size:10px;transition:transform .2s}.fmap[open] summary:before{transform:rotate(90deg)}
 .fmap div{display:flex;flex-direction:column;gap:3px;margin-top:6px;padding:8px 10px;border-radius:10px;background:rgba(255,255,255,.03);border:1px solid var(--line);max-height:180px;overflow:auto}
 .fmap span{display:flex;gap:8px;align-items:baseline}.fmap i{font-style:normal;color:var(--dim);min-width:22px}.fmap em{font-style:normal;color:var(--ink);margin-left:auto;white-space:nowrap}
+
+/* overview hero flow */
+.hflow{padding:24px 26px 26px}
+.hfg{display:grid;grid-template-columns:minmax(0,1fr) minmax(150px,.62fr) minmax(0,1fr) minmax(150px,.62fr) minmax(0,1.08fr);align-items:stretch;gap:0}
+.hfn{position:relative;padding:18px 18px 12px;border-radius:16px;background:rgba(255,255,255,.025);border:1px solid var(--line);display:flex;flex-direction:column;min-width:0}
+.hfn .l{display:flex;align-items:center;gap:9px;font-size:13px;color:var(--mut)}.hfn .ico{width:28px;height:28px;border-radius:9px;display:grid;place-items:center;background:rgba(255,255,255,.05)}
+.hfn .v{font-size:30px;font-weight:600;letter-spacing:-.02em;margin-top:12px;white-space:nowrap}.hfn .v small{font-size:13px;color:var(--dim);margin-right:5px;font-weight:500}
+.hfn .s{font-size:12px;color:var(--mut);margin-top:6px;min-height:18px}.hfn .s a{text-decoration:none;border-bottom:1px dashed currentColor}
+.hfn .chip-s{background:rgba(255,255,255,.07);color:var(--ink)}.hfn>svg{margin-top:auto;padding-top:10px}
+.hfn.tpf{background:radial-gradient(120% 120% at 100% 0%,rgba(64,217,154,.18),transparent 60%),rgba(64,217,154,.04);border-color:rgba(64,217,154,.35);box-shadow:0 20px 50px -34px rgba(64,217,154,.6)}
+.hfn.tpf .v{color:var(--pos)}.hfn.tpf .chip-s{background:var(--posbg);color:var(--pos)}.hfn.tpf.neg .v{color:var(--neg)}.hfn.tpf .ico{background:var(--posbg)}
+.hfa{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 12px;color:var(--neg);min-width:0}
+.hfal{font-size:11.5px;color:var(--mut);line-height:1.35}.hfav{font-size:17px;font-weight:600;margin-top:6px}.hfap{font-size:11.5px;color:var(--dim);margin-top:2px}
+.hfarr{width:100%;height:12px;margin-top:10px;color:rgba(255,143,115,.55)}
+.hfmix{display:flex;width:100%;height:6px;border-radius:4px;overflow:hidden;gap:2px;margin-top:10px}.hfmix span{display:block;height:100%}
+.hfml{display:flex;flex-wrap:wrap;justify-content:center;gap:4px 10px;margin-top:7px;font-size:10.5px;color:var(--dim)}.hfml span{display:inline-flex;align-items:center;gap:4px}.hfml i{width:6px;height:6px;border-radius:2px}.hfml b{color:var(--mut);font-weight:500}
+.hfwarn{display:inline-flex;align-items:center;gap:5px;margin-top:8px;font-size:11px;color:var(--warn)}
+.pystrip{margin-top:14px;display:grid;grid-template-columns:minmax(0,1.25fr) minmax(300px,1fr);gap:26px;padding:24px 26px}
+.pyb{display:flex;height:14px;border-radius:8px;overflow:hidden;gap:3px;background:rgba(255,255,255,.04)}.pyb .p{background:linear-gradient(90deg,#23B57C,#63E8B0)}.pyb .u{background:repeating-linear-gradient(135deg,#F4C45A 0 6px,#d9a63c 6px 12px)}
+.pyb span{display:block;height:100%;transition:width 1s cubic-bezier(.2,.8,.2,1)}
+.pyl{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}.pyl>*{display:flex;flex-direction:column;gap:4px;padding:12px 14px;border-radius:12px;background:rgba(255,255,255,.025);border:1px solid var(--line);text-decoration:none;color:inherit;position:relative}
+.pyl i{position:absolute;left:0;top:12px;bottom:12px;width:3px;border-radius:2px}.pyl .dim{font-size:12px}.pyl b{font-size:19px;font-weight:600}.pyl b.warn{color:var(--warn)}.pyl a:hover{border-color:rgba(244,196,90,.4)}
+.rcpt{padding:18px 20px;border-radius:16px;background:rgba(64,217,154,.045);border:1px solid rgba(64,217,154,.28)}
+.rch{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--mut);margin-bottom:10px}
+.rcr{display:flex;justify-content:space-between;gap:14px;padding:7px 0;font-size:13px;color:var(--mut);border-bottom:1px dashed var(--line2)}.rcr b{color:var(--ink);font-weight:500}.rcr b.neg{color:var(--neg)}.rcr b.acc{color:#9AA6FF}
+.rct{display:flex;justify-content:space-between;align-items:baseline;padding-top:12px;font-size:14px;font-weight:600}.rct b{font-size:28px;font-weight:600}.rct small{font-size:12px;color:var(--dim);margin-right:5px;font-weight:500}
+.rcn{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--warn);margin-top:8px}
+@media (max-width:1180px){.hfg{grid-template-columns:minmax(0,1fr);gap:0}.hfa{flex-direction:row;flex-wrap:wrap;justify-content:center;gap:4px 10px;padding:10px 0}.hfa .hfarr{display:none}.hfa:before{content:'↓';font-size:16px;color:rgba(255,143,115,.7);margin-right:6px}.hfmix,.hfml{flex-basis:100%;max-width:340px}.hfav{margin-top:0}.hfap{margin-top:0}}
+@media (max-width:900px){.pystrip{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:520px){.pyl{grid-template-columns:1fr}.hfn .v{font-size:26px}.hflow,.pystrip{padding:18px}}
 </style>
 </head>
 <body>
@@ -1031,7 +1061,7 @@ function vOverview(){const L=t(),R=S.res;if(!R)return empty();const tt=R.tot,rv=
   const chart=dailyChart(R,L);
   const topL=topCard(R,L);
   const nl=R.insights.loss.length;
-  return `<div class="grid4">${kp}</div>${recvStrip(R)}
+  return `${heroFlow(R)}${payStrip(R)}
   <div class="row"><section class="card"><div class="hd"><div><h2>${esc(L.wfT)}</h2><div class="sub">RM · ${esc(period())}</div></div></div>${wf}</section>
   <section class="card" style="display:flex;flex-direction:column"><div class="hd"><div><h2>${esc(L.whereT)}</h2><div class="sub">${esc(L.whereS)}</div></div><span class="chip-s" style="background:rgba(255,255,255,.05);color:var(--mut)">RM ${f2(tt.rev)} = 100%</span></div>${donut}</section></div>
   <div class="row"><section class="card" id="dcard" style="display:flex;flex-direction:column">${chart}</section>
@@ -1504,6 +1534,38 @@ function alignTotal(){S.monthP=S.monthP||{};const a=S.monthP.shopee,b=S.monthP.t
 /* ---------- show how each column was paired by keyword ---------- */
 Object.assign(X.zh,{fmapT:n=>`按关键字对上 ${n} 个栏位`,'fm_Deal Price':'售价 Q','fm_Quantity':'数量 R','fm_SKU Reference No.':'小 SKU','fm_Transaction Fee':'手续费','fm_Commission Fee':'佣金','fm_Service Fee':'服务费','fm_Expense(RM)':'联盟佣金','fm_Cost per Direct Conversion':'广告费 U','fm_Ref. Cost':'单位成本','fm_Item':'SKU','fm_Order Complete Time':'月份依据','fm_Created Time':'月份依据','fm_Seller SKU':'小 SKU','fm_Total Fees':'总费用（核对）','fm_Total settlement amount':'到账金额','fm_Order settled time':'结算时间','fm_Seller shipping fee':'运费','fm_TikTok Shop commission fee':'佣金','fm_Transaction fee':'手续费','fm_Affiliate Commission':'联盟佣金','fm_Affiliate Shop Ads commission':'广告费'});
 Object.assign(X.en,{fmapT:n=>`${n} columns paired by keyword`,'fm_Deal Price':'Price Q','fm_Quantity':'Qty R','fm_SKU Reference No.':'Variation SKU','fm_Expense(RM)':'Affiliate','fm_Cost per Direct Conversion':'Ads U','fm_Ref. Cost':'Unit cost','fm_Order Complete Time':'Month basis','fm_Created Time':'Month basis','fm_Seller SKU':'Variation SKU','fm_Total settlement amount':'Received','fm_Affiliate Shop Ads commission':'Ads'});
+
+/* ---------- overview hero: how revenue turns into profit, and how much is already in hand ---------- */
+Object.assign(X.zh,{hfT:'这个月赚多少',hfS:'营业额一步步扣掉费用和成本，剩下的就是真实净利',hfDed:'扣平台、联盟、广告费用',hfCost:'扣货品成本',hfOf:p=>`占营业额 ${p}`,
+  hfPlat:'平台',hfAff:'联盟',hfAds:'广告',pyT:'钱到账了吗',pyS:'营业额里，已经结算到账和还没结算的部分',pyPaidRev:'已结算订单',pyPendRev:'未结算订单',
+  rcT:'净赚 · 已经落袋',rcPaid:'已到账金额（已扣平台费用）',rcCost:'这些订单的货品成本',rcAds:'店铺广告（GMV）',rcReimb:'平台补偿',rcNet:'净赚',
+  rcRev:'营业额',rcFees:'平台费用、联盟、广告',rcAll:'Shopee 完成订单都已结算，全部算已到账',pyAllPaid:'全部已结算'});
+Object.assign(X.en,{hfT:'What this month earned',hfS:'Revenue minus fees and cost of goods, step by step — what is left is true profit',hfDed:'Platform, affiliate & ad fees',hfCost:'Cost of goods',hfOf:p=>`${p} of revenue`,
+  hfPlat:'Platform',hfAff:'Affiliate',hfAds:'Ads',pyT:'Has the money arrived?',pyS:'How much of revenue is settled and paid out vs not yet',pyPaidRev:'Settled orders',pyPendRev:'Not settled',
+  rcT:'Net earned · in hand',rcPaid:'Received (after platform fees)',rcCost:'Cost of goods for these orders',rcAds:'Shop ads (GMV)',rcReimb:'Platform reimbursement',rcNet:'Net earned',
+  rcRev:'Revenue',rcFees:'Platform, affiliate & ad fees',rcAll:'Shopee completed orders are all settled — everything counts as received',pyAllPaid:'All settled'});
+function heroFlow(R){const L=t(),tt=R.tot,rv=tt.rev||1,D=R.daily,tk=R.plat==='tiktok';
+  const plat=tt.an+tt.ao+tt.ap+(tt.sh||0),mix=[[L.hfPlat,plat,'#FF8F73'],[L.hfAff,tt.ai,'#B58CFF'],[L.hfAds,tt.u,'#E0664A']];
+  const node=(cls,label,v,sub,sp,icn,ic2)=>`<div class="hfn ${cls}"><div class="l"><span class="ico">${ic(icn,15,ic2,2.2)}</span>${esc(label)}</div><div class="v num"><small>RM</small><span data-count="${v}">${f2(v)}</span></div><div class="s">${sub}</div>${sp}</div>`;
+  const arrow=(label,v,extra)=>`<div class="hfa"><div class="hfal">${esc(label)}</div><div class="hfav num">−${f2(v)}</div><div class="hfap num">${pc(v/rv)}</div>${extra||''}<svg class="hfarr" viewBox="0 0 120 12" preserveAspectRatio="none" aria-hidden="true"><path d="M0 6 H112" stroke="currentColor" stroke-width="1.6" stroke-dasharray="3 4"/><path d="M106 1 L114 6 L106 11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>`;
+  const mixBar=`<div class="hfmix">${mix.map(([l,v,c])=>`<span style="flex:${Math.max(v,0.0001)/(tt.ded||1)};background:${c}" title="${esc(l)} ${f2(v)}"></span>`).join('')}</div><div class="hfml">${mix.map(([l,v,c])=>`<span><i style="background:${c}"></i>${esc(l)} <b class="num">${f0(v)}</b></span>`).join('')}</div>`;
+  const n1=node('rev',L.kRev,tt.rev,esc(L.ordersUnits(f0(tt.orders),f0(tt.units))),spark(D.map(d=>d.rev),'#8B9BFF','sp1'),'cash','#B9C3FF');
+  const n2=node('net',L.kNet,tt.net,`<span class="chip-s">${pc(tt.netMargin)}</span> ${esc(L.marginL)}`,spark(D.map(d=>d.net||0),'#C3CBFF','sp3'),'trend','#EEF1F7');
+  const n3=node('tpf '+(tt.net2<0?'neg':''),L.kTP,tt.net2,`<span class="chip-s">${pc(tt.margin)}</span> ${esc(L.marginL)}${tt.missingSkus?` · <a href="#costs" class="warn">${esc(L.nNoCost(tt.missingSkus))}</a>`:''}`,spark(D.map(d=>d.net2),'#40D99A','sp2'),'gem','#40D99A');
+  return `<section class="card hflow"><div class="hd" style="margin-bottom:18px"><div><h2>${esc(L.hfT)}</h2><div class="sub">${esc(L.hfS)}</div></div></div>
+    <div class="hfg">${n1}${arrow(L.hfDed,tt.ded,mixBar)}${n2}${arrow(L.hfCost,tt.cost,tt.missingSkus?`<div class="hfwarn">${ic('alert',12,'#F4C45A',2.4)}${esc(L.nNoCost(tt.missingSkus))}</div>`:'')}${n3}</div></section>`}
+function payStrip(R){const L=t(),tt=R.tot,tk=R.plat==='tiktok',rv=tt.rev||1;
+  const paidRev=tk?tt.rev-(tt.unsetRev||0):tt.rev,pendRev=tk?(tt.unsetRev||0):0,v=tk?tt.recvNet:tt.net2;
+  const bar=`<div class="pyb"><span class="p" style="width:${(paidRev/rv*100).toFixed(2)}%"></span><span class="u" style="width:${(pendRev/rv*100).toFixed(2)}%"></span></div>
+    <div class="pyl"><div><i style="background:#52E0A6"></i><span class="dim">${esc(L.pyPaidRev)}</span><b class="num">RM ${f2(paidRev)}</b><span class="num dim">${f0(tk?tt.paidOrders:tt.orders)} ${lang==='zh'?'单':'orders'} · ${pc(paidRev/rv)}</span></div>
+    ${tk&&pendRev?`<a href="#payout" data-act="pend"><i style="background:#F4C45A"></i><span class="dim">${esc(L.pyPendRev)}</span><b class="num warn">RM ${f2(pendRev)}</b><span class="num dim">${f0(tt.unsetOrders)} ${lang==='zh'?'单':'orders'} · ${pc(pendRev/rv)} ${ic('chev',12)}</span></a>`:`<div><i style="background:#52E0A6"></i><span class="dim">${esc(L.pyAllPaid)}</span></div>`}</div>`;
+  const rows=tk?[[L.rcPaid,tt.paidAmt,''],[L.rcCost,tt.setCost,'−'],[L.rcAds,tt.shopAds,'−']].concat(tt.reimb?[[L.rcReimb,tt.reimb,'+']]:[])
+    :[[L.rcRev,tt.rev,''],[L.rcFees,tt.ded,'−'],[L.rcCost,tt.cost,'−']];
+  const notes=tk?[tt.setMissing?L.rnMiss(tt.setMissing):'',pendRev?L.rnPend(f2(pendRev)):''].filter(Boolean):[L.rcAll];
+  const rc=`<div class="rcpt"><div class="rch">${ic('cash',15,'#52E0A6',2)}${esc(L.rcT)}</div>${rows.filter(r=>r[1]||!r[2]).map(([l,x,s])=>`<div class="rcr"><span>${esc(l)}</span><b class="num ${s==='−'?'neg':s==='+'?'acc':''}">${s}${f2(x)}</b></div>`).join('')}
+    <div class="rct"><span>${esc(L.rcNet)}</span><b class="num ${v<0?'neg':'pos'}"><small>RM</small><span data-count="${v}">${f2(v)}</span></b></div>
+    ${notes.map(x=>`<div class="rcn">${ic('alert',12,'#F4C45A',2.4)}${esc(x)}</div>`).join('')}</div>`;
+  return `<section class="card pystrip"><div class="pyleft"><div class="hd" style="margin-bottom:16px"><div><h2>${esc(L.pyT)}</h2><div class="sub">${esc(L.pyS)}</div></div></div>${bar}</div>${rc}</section>`}
 
 /* ---------- styled Excel exports (xlsx-js-style) ---------- */
 Object.assign(X.zh,{expOk:'营销报告已导出',xT:'Lumen 真利 · 营销报告',xPer:'期间',xGen:'生成于',xKRev:'营业额',xKNet:'真实净利',xKMg:'利润率',xKOrd:'订单',xKUnits:'销量',
