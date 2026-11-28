@@ -434,35 +434,68 @@ a.brand{text-decoration:none;color:inherit;cursor:pointer;border-radius:12px;tra
 .fmap div{display:flex;flex-direction:column;gap:3px;margin-top:6px;padding:8px 10px;border-radius:10px;background:rgba(255,255,255,.03);border:1px solid var(--line);max-height:180px;overflow:auto}
 .fmap span{display:flex;gap:8px;align-items:baseline}.fmap i{font-style:normal;color:var(--dim);min-width:22px}.fmap em{font-style:normal;color:var(--ink);margin-left:auto;white-space:nowrap}
 
-/* overview hero flow */
-.hflow{padding:24px 26px 26px}
-.hfg{display:grid;grid-template-columns:minmax(0,1fr) minmax(150px,.62fr) minmax(0,1fr) minmax(150px,.62fr) minmax(0,1.08fr);align-items:stretch;gap:0}
-.hfn{position:relative;padding:18px 18px 12px;border-radius:16px;background:rgba(255,255,255,.025);border:1px solid var(--line);display:flex;flex-direction:column;min-width:0}
-.hfn .l{display:flex;align-items:center;gap:9px;font-size:13px;color:var(--mut)}.hfn .ico{width:28px;height:28px;border-radius:9px;display:grid;place-items:center;background:rgba(255,255,255,.05)}
-.hfn .v{font-size:30px;font-weight:600;letter-spacing:-.02em;margin-top:12px;white-space:nowrap}.hfn .v small{font-size:13px;color:var(--dim);margin-right:5px;font-weight:500}
-.hfn .s{font-size:12px;color:var(--mut);margin-top:6px;min-height:18px}.hfn .s a{text-decoration:none;border-bottom:1px dashed currentColor}
-.hfn .chip-s{background:rgba(255,255,255,.07);color:var(--ink)}.hfn>svg{margin-top:auto;padding-top:10px}
-.hfn.tpf{background:radial-gradient(120% 120% at 100% 0%,rgba(64,217,154,.18),transparent 60%),rgba(64,217,154,.04);border-color:rgba(64,217,154,.35);box-shadow:0 20px 50px -34px rgba(64,217,154,.6)}
-.hfn.tpf .v{color:var(--pos)}.hfn.tpf .chip-s{background:var(--posbg);color:var(--pos)}.hfn.tpf.neg .v{color:var(--neg)}.hfn.tpf .ico{background:var(--posbg)}
-.hfa{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 12px;color:var(--neg);min-width:0}
-.hfal{font-size:11.5px;color:var(--mut);line-height:1.35}.hfav{font-size:17px;font-weight:600;margin-top:6px}.hfap{font-size:11.5px;color:var(--dim);margin-top:2px}
-.hfarr{width:100%;height:12px;margin-top:10px;color:rgba(255,143,115,.55)}
-.hfmix{display:flex;width:100%;height:6px;border-radius:4px;overflow:hidden;gap:2px;margin-top:10px}.hfmix span{display:block;height:100%}
-.hfml{display:flex;flex-wrap:wrap;justify-content:center;gap:4px 10px;margin-top:7px;font-size:10.5px;color:var(--dim)}.hfml span{display:inline-flex;align-items:center;gap:4px}.hfml i{width:6px;height:6px;border-radius:2px}.hfml b{color:var(--mut);font-weight:500}
-.hfwarn{display:inline-flex;align-items:center;gap:5px;margin-top:8px;font-size:11px;color:var(--warn)}
-.pystrip{margin-top:14px;display:grid;grid-template-columns:minmax(0,1.25fr) minmax(300px,1fr);gap:26px;padding:24px 26px}
-.pyb{display:flex;height:14px;border-radius:8px;overflow:hidden;gap:3px;background:rgba(255,255,255,.04)}.pyb .p{background:linear-gradient(90deg,#23B57C,#63E8B0)}.pyb .u{background:repeating-linear-gradient(135deg,#F4C45A 0 6px,#d9a63c 6px 12px)}
-.pyb span{display:block;height:100%;transition:width 1s cubic-bezier(.2,.8,.2,1)}
-.pyl{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}.pyl>*{display:flex;flex-direction:column;gap:4px;padding:12px 14px;border-radius:12px;background:rgba(255,255,255,.025);border:1px solid var(--line);text-decoration:none;color:inherit;position:relative}
-.pyl i{position:absolute;left:0;top:12px;bottom:12px;width:3px;border-radius:2px}.pyl .dim{font-size:12px}.pyl b{font-size:19px;font-weight:600}.pyl b.warn{color:var(--warn)}.pyl a:hover{border-color:rgba(244,196,90,.4)}
-.rcpt{padding:18px 20px;border-radius:16px;background:rgba(64,217,154,.045);border:1px solid rgba(64,217,154,.28)}
-.rch{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--mut);margin-bottom:10px}
-.rcr{display:flex;justify-content:space-between;gap:14px;padding:7px 0;font-size:13px;color:var(--mut);border-bottom:1px dashed var(--line2)}.rcr b{color:var(--ink);font-weight:500}.rcr b.neg{color:var(--neg)}.rcr b.acc{color:#9AA6FF}
-.rct{display:flex;justify-content:space-between;align-items:baseline;padding-top:12px;font-size:14px;font-weight:600}.rct b{font-size:28px;font-weight:600}.rct small{font-size:12px;color:var(--dim);margin-right:5px;font-weight:500}
-.rcn{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--warn);margin-top:8px}
-@media (max-width:1180px){.hfg{grid-template-columns:minmax(0,1fr);gap:0}.hfa{flex-direction:row;flex-wrap:wrap;justify-content:center;gap:4px 10px;padding:10px 0}.hfa .hfarr{display:none}.hfa:before{content:'↓';font-size:16px;color:rgba(255,143,115,.7);margin-right:6px}.hfmix,.hfml{flex-basis:100%;max-width:340px}.hfav{margin-top:0}.hfap{margin-top:0}}
-@media (max-width:900px){.pystrip{grid-template-columns:minmax(0,1fr)}}
-@media (max-width:520px){.pyl{grid-template-columns:1fr}.hfn .v{font-size:26px}.hflow,.pystrip{padding:18px}}
+/* overview hero — premium tech panel */
+.xpanel{position:relative;overflow:hidden;padding:24px 28px 26px;background:radial-gradient(70% 90% at 12% 0%,rgba(64,217,154,.10),transparent 60%) padding-box,radial-gradient(60% 80% at 100% 0%,rgba(139,155,255,.12),transparent 60%) padding-box,linear-gradient(180deg,#141927,#0E121C) padding-box,linear-gradient(135deg,rgba(154,166,255,.45),rgba(255,255,255,.05) 38%,rgba(64,217,154,.35)) border-box;border:1px solid transparent;box-shadow:0 30px 80px -40px rgba(0,0,0,.8)}
+.xpanel:before{content:'';position:absolute;inset:0;pointer-events:none;background-image:linear-gradient(rgba(154,166,255,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(154,166,255,.045) 1px,transparent 1px);background-size:32px 32px;mask-image:radial-gradient(110% 80% at 50% 0%,#000 25%,transparent 75%)}
+.xpanel>*{position:relative;z-index:1}
+.xbgw{position:absolute!important;left:0;right:0;bottom:0;width:100%;height:90px;z-index:0!important;pointer-events:none}
+.xbgw .w1{animation:xdrift 14s linear infinite}.xbgw .w2{animation:xdrift 22s linear infinite reverse}
+@keyframes xdrift{from{transform:translateX(0)}to{transform:translateX(-600px)}}
+.xhd{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:20px}.xhd>div{display:flex;align-items:center;gap:12px}
+.xhd h2{font:600 16px 'Geist','Noto Sans SC';margin:0}
+.xtag{font:600 10px 'Geist Mono';letter-spacing:.16em;color:#B9C3FF;padding:4px 9px;border-radius:6px;border:1px solid rgba(154,166,255,.35);background:rgba(154,166,255,.1);box-shadow:0 0 18px rgba(154,166,255,.18)}
+.xpay{margin-top:16px}.xpay .xtag{color:#7CF0C5;border-color:rgba(64,217,154,.35);background:rgba(64,217,154,.1);box-shadow:0 0 18px rgba(64,217,154,.18)}
+.xmeta{font:500 12px 'Geist Mono';color:var(--dim)}
+.xlink{font-size:12.5px;color:var(--warn);text-decoration:none;display:inline-flex;align-items:center;gap:4px;padding:6px 11px;border-radius:9px;border:1px solid rgba(244,196,90,.28);background:rgba(244,196,90,.07)}
+.xl{display:flex;align-items:baseline;justify-content:space-between;gap:8px;font-size:12.5px;color:var(--mut)}.xl em{font:500 9.5px 'Geist Mono';letter-spacing:.16em;color:var(--dim);font-style:normal}.xl span{display:inline-flex;align-items:center;gap:7px}
+.xv{font:600 24px 'Geist';letter-spacing:-.02em;margin-top:6px;font-variant-numeric:tabular-nums;white-space:nowrap}.xv small{font:500 11px 'Geist Mono';color:var(--dim);margin-right:6px;letter-spacing:.06em}
+.xv.big{font-size:clamp(26px,2.5vw,36px);letter-spacing:-.03em}.xv.pos{color:#5BE8B0;text-shadow:0 0 28px rgba(64,217,154,.4)}.xv.neg{color:var(--neg)}.xv.warnv{color:var(--warn)}.xv.dimv{color:var(--dim)}
+.xsub{font-size:12px;color:var(--dim);margin-top:3px;display:flex;flex-wrap:wrap;gap:4px 6px;align-items:center}.xsub .num{font-family:'Geist Mono';color:var(--mut)}
+.xw{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;color:var(--warn);text-decoration:none}
+.xwave{display:block;width:100%;height:42px;margin-top:10px;overflow:visible}.xwave .ln{filter:drop-shadow(0 0 4px currentColor)}.xwave .dotp{filter:drop-shadow(0 0 5px #fff)}
+.xmain{display:grid;grid-template-columns:minmax(320px,1fr) minmax(0,1.5fr);gap:22px;align-items:stretch}
+.xhero{display:flex;align-items:center;gap:20px;flex-wrap:wrap;padding:18px 20px;border-radius:18px;background:linear-gradient(135deg,rgba(64,217,154,.10),rgba(47,176,255,.04));border:1px solid rgba(64,217,154,.25);box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
+.xhv{flex:1;min-width:0}.xhv .xwave{height:52px}
+.xgauge{position:relative;width:150px;height:150px;flex:none}.xgauge svg{width:100%;height:100%;overflow:visible}
+.xgauge .tk line{stroke:rgba(255,255,255,.12);stroke-width:1.4;stroke-linecap:round}.xgauge .tk line.on{stroke:rgba(124,240,197,.75)}
+.xgauge .trk{fill:none;stroke:rgba(255,255,255,.06);stroke-width:10}.xgauge .arc{fill:none;stroke-width:10;stroke-linecap:round;animation:xarc 1.4s cubic-bezier(.2,.8,.2,1) both}
+.xgauge .inner{fill:rgba(10,13,22,.6);stroke:rgba(255,255,255,.05)}
+@keyframes xarc{from{stroke-dashoffset:var(--C)}to{stroke-dashoffset:var(--o)}}
+.xgauge .gc{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}.xgauge .gp{font:600 26px 'Geist';color:#EAFBF4;letter-spacing:-.02em}.xgauge .gl{font-size:11px;color:var(--mut);margin-top:2px}
+.xgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.xc{padding:14px 16px 8px;border-radius:14px;background:rgba(255,255,255,.025);border:1px solid var(--line);transition:border-color .2s,transform .2s}.xc:hover{border-color:rgba(154,166,255,.3);transform:translateY(-1px)}
+.xcomp{margin-top:20px;padding-top:18px;border-top:1px solid var(--line)}
+.xbar{display:flex;height:12px;border-radius:7px;overflow:hidden;gap:2px;background:rgba(255,255,255,.04)}
+.xs{display:block;height:100%;position:relative;overflow:hidden;transition:flex 1s cubic-bezier(.2,.8,.2,1)}.xs:after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.35),transparent);transform:translateX(-100%);animation:xshine 3.6s ease-in-out infinite}
+.xs.xtp{box-shadow:0 0 16px rgba(64,217,154,.6)}
+@keyframes xshine{0%,60%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+.xleg{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:10px;font-size:11.5px;color:var(--mut)}.xleg span{display:inline-flex;align-items:center;gap:6px}.xleg i{width:8px;height:8px;border-radius:2px}.xleg b{font:500 11.5px 'Geist Mono';color:var(--ink)}
+.xcash{display:grid;grid-template-columns:auto minmax(0,1fr) minmax(0,1.15fr);gap:24px;align-items:center}
+.xliq{position:relative;width:150px;height:150px}.xliq svg{width:100%;height:100%}
+.xliq .lqr{fill:none;stroke:rgba(64,217,154,.35);stroke-width:1.5;stroke-dasharray:2 4}.xliq .lqbg{fill:rgba(255,255,255,.03)}
+.xliq .lw1{animation:xwav 4s linear infinite}.xliq .lw2{animation:xwav 6s linear infinite reverse}
+@keyframes xwav{from{transform:translateX(0)}to{transform:translateX(120px)}}
+.xliq .lqt{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-shadow:0 2px 10px rgba(0,0,0,.6)}.xliq .lqt span{font:600 26px 'Geist';color:#fff}.xliq .lqt em{font-style:normal;font-size:11px;color:rgba(255,255,255,.85)}
+.xsp{display:flex;flex-direction:column;gap:12px}.xspi{padding:12px 16px;border-radius:14px;background:rgba(255,255,255,.025);border:1px solid var(--line)}.sd{width:7px;height:7px;border-radius:50%;box-shadow:0 0 8px currentColor}
+.xnet{padding:18px 20px;border-radius:18px;background:linear-gradient(135deg,rgba(64,217,154,.12),rgba(64,217,154,.03));border:1px solid rgba(64,217,154,.3);height:100%}
+.xeq{margin-top:12px;display:flex;flex-direction:column;gap:2px}.eqr{display:grid;grid-template-columns:14px 1fr auto;gap:8px;align-items:baseline;font-size:12px;padding:4px 0;border-bottom:1px dashed rgba(255,255,255,.07)}
+.eqr .op{font:500 12px 'Geist Mono';color:var(--dim)}.eqr em{font-style:normal;color:var(--mut)}.eqr b{font:500 12.5px 'Geist Mono';color:var(--ink)}.eqr.tot{border-bottom:0;padding-top:6px}.eqr.tot b{color:#5BE8B0}
+@media (max-width:1180px){.xmain{grid-template-columns:minmax(0,1fr)}.xcash{grid-template-columns:auto minmax(0,1fr)}.xnet{grid-column:1/-1}}
+@media (max-width:620px){.xhero{flex-direction:column;align-items:stretch;text-align:left}.xgauge{margin:0 auto}.xgrid{grid-template-columns:minmax(0,1fr)}.xcash{grid-template-columns:minmax(0,1fr)}.xliq{margin:0 auto}.xpanel{padding:18px}.xv.big{font-size:32px}.xmeta{display:none}}
+.xpay .xhero{background:linear-gradient(135deg,rgba(64,217,154,.12),rgba(35,181,124,.03))}
+.g2 .trk.pend{stroke:rgba(244,196,90,.28);stroke-dasharray:3 3}.g2 .tk line.pd{stroke:rgba(244,196,90,.35)}.g2 .tk line.on{stroke:rgba(124,240,197,.8)}
+.xc.xwf{grid-column:1/-1;padding-bottom:12px}.xwb{display:flex;flex-direction:column;gap:7px;margin-top:10px}
+.xwr{display:grid;grid-template-columns:130px minmax(0,1fr) 92px;align-items:center;gap:12px;font-size:12px;color:var(--mut)}
+.xwl{display:flex;align-items:center;gap:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.xwl .op{font:500 12px 'Geist Mono';color:var(--dim);font-style:normal;width:10px}
+.xwt{position:relative;height:8px;border-radius:4px;background:rgba(255,255,255,.04)}.xwt i{position:absolute;top:0;bottom:0;border-radius:4px;animation:wfin 1s cubic-bezier(.2,.8,.2,1) both}
+@keyframes wfin{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0 0 0)}}
+.xwr b{font:500 12.5px 'Geist Mono';color:var(--ink);text-align:right}.xwr.tot{padding-top:7px;border-top:1px dashed rgba(255,255,255,.08);color:var(--ink);font-weight:600}.xwr.tot b{color:#5BE8B0}
+.xs.pend{background:repeating-linear-gradient(135deg,#F4C45A 0 6px,#C9962F 6px 12px)}
+.xflat{height:42px;margin-top:10px;border-bottom:1px dashed rgba(255,255,255,.1)}
+.sd{display:inline-block;width:7px;height:7px;border-radius:50%;box-shadow:0 0 8px currentColor}
+@media (max-width:620px){.xwr{grid-template-columns:96px minmax(0,1fr) 78px}}
+@media (prefers-reduced-motion:reduce){.xwt i{animation:none!important}}
+@media (prefers-reduced-motion:reduce){.xbgw path,.xliq path,.xs:after,.xgauge .arc{animation:none!important}}
 </style>
 </head>
 <body>
@@ -1544,28 +1577,71 @@ Object.assign(X.en,{hfT:'What this month earned',hfS:'Revenue minus fees and cos
   hfPlat:'Platform',hfAff:'Affiliate',hfAds:'Ads',pyT:'Has the money arrived?',pyS:'How much of revenue is settled and paid out vs not yet',pyPaidRev:'Settled orders',pyPendRev:'Not settled',
   rcT:'Net earned · in hand',rcPaid:'Received (after platform fees)',rcCost:'Cost of goods for these orders',rcAds:'Shop ads (GMV)',rcReimb:'Platform reimbursement',rcNet:'Net earned',
   rcRev:'Revenue',rcFees:'Platform, affiliate & ad fees',rcAll:'Shopee completed orders are all settled — everything counts as received',pyAllPaid:'All settled'});
-function heroFlow(R){const L=t(),tt=R.tot,rv=tt.rev||1,D=R.daily,tk=R.plat==='tiktok';
-  const plat=tt.an+tt.ao+tt.ap+(tt.sh||0),mix=[[L.hfPlat,plat,'#FF8F73'],[L.hfAff,tt.ai,'#B58CFF'],[L.hfAds,tt.u,'#E0664A']];
-  const node=(cls,label,v,sub,sp,icn,ic2)=>`<div class="hfn ${cls}"><div class="l"><span class="ico">${ic(icn,15,ic2,2.2)}</span>${esc(label)}</div><div class="v num"><small>RM</small><span data-count="${v}">${f2(v)}</span></div><div class="s">${sub}</div>${sp}</div>`;
-  const arrow=(label,v,extra)=>`<div class="hfa"><div class="hfal">${esc(label)}</div><div class="hfav num">−${f2(v)}</div><div class="hfap num">${pc(v/rv)}</div>${extra||''}<svg class="hfarr" viewBox="0 0 120 12" preserveAspectRatio="none" aria-hidden="true"><path d="M0 6 H112" stroke="currentColor" stroke-width="1.6" stroke-dasharray="3 4"/><path d="M106 1 L114 6 L106 11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>`;
-  const mixBar=`<div class="hfmix">${mix.map(([l,v,c])=>`<span style="flex:${Math.max(v,0.0001)/(tt.ded||1)};background:${c}" title="${esc(l)} ${f2(v)}"></span>`).join('')}</div><div class="hfml">${mix.map(([l,v,c])=>`<span><i style="background:${c}"></i>${esc(l)} <b class="num">${f0(v)}</b></span>`).join('')}</div>`;
-  const n1=node('rev',L.kRev,tt.rev,esc(L.ordersUnits(f0(tt.orders),f0(tt.units))),spark(D.map(d=>d.rev),'#8B9BFF','sp1'),'cash','#B9C3FF');
-  const n2=node('net',L.kNet,tt.net,`<span class="chip-s">${pc(tt.netMargin)}</span> ${esc(L.marginL)}`,spark(D.map(d=>d.net||0),'#C3CBFF','sp3'),'trend','#EEF1F7');
-  const n3=node('tpf '+(tt.net2<0?'neg':''),L.kTP,tt.net2,`<span class="chip-s">${pc(tt.margin)}</span> ${esc(L.marginL)}${tt.missingSkus?` · <a href="#costs" class="warn">${esc(L.nNoCost(tt.missingSkus))}</a>`:''}`,spark(D.map(d=>d.net2),'#40D99A','sp2'),'gem','#40D99A');
-  return `<section class="card hflow"><div class="hd" style="margin-bottom:18px"><div><h2>${esc(L.hfT)}</h2><div class="sub">${esc(L.hfS)}</div></div></div>
-    <div class="hfg">${n1}${arrow(L.hfDed,tt.ded,mixBar)}${n2}${arrow(L.hfCost,tt.cost,tt.missingSkus?`<div class="hfwarn">${ic('alert',12,'#F4C45A',2.4)}${esc(L.nNoCost(tt.missingSkus))}</div>`:'')}${n3}</div></section>`}
+function smooth(vals,W,H,pad){if(vals.length<2)return null;const mx=Math.max(...vals),mn=Math.min(0,...vals),sp=(mx-mn)||1;
+  const P=vals.map((v,i)=>[i/(vals.length-1)*W,H-pad-(v-mn)/sp*(H-pad*2)]);let d='M'+P[0][0].toFixed(1)+' '+P[0][1].toFixed(1);
+  for(let i=0;i<P.length-1;i++){const p0=P[i-1]||P[i],p1=P[i],p2=P[i+1],p3=P[i+2]||p2;
+    d+=` C${(p1[0]+(p2[0]-p0[0])/6).toFixed(1)} ${(p1[1]+(p2[1]-p0[1])/6).toFixed(1)} ${(p2[0]-(p3[0]-p1[0])/6).toFixed(1)} ${(p2[1]-(p3[1]-p1[1])/6).toFixed(1)} ${p2[0].toFixed(1)} ${p2[1].toFixed(1)}`}
+  return {d,last:P[P.length-1]}}
+function wave(vals,color,id,H){H=H||46;const W=240,s=smooth(vals,W,H,4);if(!s)return '';
+  return `<svg class="xwave" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${color}" stop-opacity=".35"/><stop offset="1" stop-color="${color}" stop-opacity="0"/></linearGradient></defs><path d="${s.d} L${W} ${H} L0 ${H}Z" fill="url(#${id})"/><path class="ln" d="${s.d}" fill="none" stroke="${color}" stroke-width="1.6" vector-effect="non-scaling-stroke"/><circle cx="${s.last[0]}" cy="${s.last[1]}" r="2.6" fill="${color}" class="dotp"/></svg>`}
+function bgWaves(c1,c2){return `<svg class="xbgw" viewBox="0 0 1200 120" preserveAspectRatio="none" aria-hidden="true"><path class="w1" d="M0 70 C150 30 300 110 450 70 C600 30 750 110 900 70 C1050 30 1200 110 1350 70 C1500 30 1650 110 1800 70 L1800 120 L0 120Z" fill="${c1}"/><path class="w2" d="M0 84 C200 54 400 114 600 84 C800 54 1000 114 1200 84 C1400 54 1600 114 1800 84 L1800 120 L0 120Z" fill="${c2}"/></svg>`}
+function gauge(pct,val,label){const r=74,C=2*Math.PI*r,p=Math.max(0,Math.min(1,pct)),ticks=Array.from({length:60},(_,i)=>{const a=i/60*2*Math.PI-Math.PI/2,r1=88,r2=i%5?92:95;return `<line x1="${(100+r1*Math.cos(a)).toFixed(1)}" y1="${(100+r1*Math.sin(a)).toFixed(1)}" x2="${(100+r2*Math.cos(a)).toFixed(1)}" y2="${(100+r2*Math.sin(a)).toFixed(1)}" class="${i/60<=p?'on':''}"/>`}).join('');
+  return `<div class="xgauge"><svg viewBox="0 0 200 200" aria-hidden="true"><defs><linearGradient id="gg1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7CF0C5"/><stop offset="1" stop-color="#2FB0FF"/></linearGradient><filter id="gglow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+    <g class="tk">${ticks}</g><circle cx="100" cy="100" r="${r}" class="trk"/><circle cx="100" cy="100" r="${r}" class="arc" stroke="url(#gg1)" filter="url(#gglow)" style="--C:${C.toFixed(1)};--o:${(C*(1-p)).toFixed(1)}" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${(C*(1-p)).toFixed(1)}" transform="rotate(-90 100 100)"/><circle cx="100" cy="100" r="58" class="inner"/></svg>
+    <div class="gc"><span class="gp num">${pc(pct)}</span><span class="gl">${esc(label)}</span></div></div>`}
+function liquid(pct){const p=Math.max(0,Math.min(1,pct)),y=(1-p)*120;
+  const w=(o)=>`M${-240+o} ${y} q30 -9 60 0 t60 0 t60 0 t60 0 t60 0 t60 0 t60 0 t60 0 t60 0 t60 0 V140 H${-240+o} Z`;
+  return `<div class="xliq"><svg viewBox="0 0 120 120" aria-hidden="true"><defs><clipPath id="lqc"><circle cx="60" cy="60" r="54"/></clipPath><linearGradient id="lqg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#63E8B0"/><stop offset="1" stop-color="#1C8F68"/></linearGradient></defs>
+    <circle cx="60" cy="60" r="58" class="lqr"/><g clip-path="url(#lqc)"><rect width="120" height="120" class="lqbg"/><path class="lw2" d="${w(30)}" fill="rgba(99,232,176,.35)"/><path class="lw1" d="${w(0)}" fill="url(#lqg)"/></g></svg>
+    <div class="lqt"><span class="num">${pc(p)}</span><em>${esc(t().paidT)}</em></div></div>`}
+function heroFlow(R){const L=t(),tt=R.tot,rv=tt.rev||1,D=R.daily;
+  const plat=tt.an+tt.ao+tt.ap+(tt.sh||0),tp=Math.max(tt.net2,0);
+  const seg=[['fee',L.hfPlat,plat,'#FF8F73','#FFB49F'],['aff',L.hfAff,tt.ai,'#9C7BFF','#C9B6FF'],['ads',L.hfAds,tt.u,'#FF5C8A','#FF9BB8'],['cogs',L.gCogsI,tt.cost,'#E9A93A','#FFD98A'],['xtp',L.kTP,tp,'#2FC08A','#7CF0C5']];
+  const tot=seg.reduce((s,x)=>s+x[2],0)||1;
+  const bar=`<div class="xbar">${seg.map(([k,l,v,c,c2])=>v>0?`<span class="xs ${k}" style="flex:${(v/tot).toFixed(5)};background:linear-gradient(180deg,${c2},${c})" title="${esc(l)} · RM ${f2(v)} · ${pc(v/rv)}"></span>`:'').join('')}</div>
+    <div class="xleg">${seg.map(([k,l,v,c])=>`<span><i style="background:${c}"></i>${esc(l)}<b class="num">${pc(v/rv)}</b></span>`).join('')}</div>`;
+  const cell=(k,lab,en,v,sub,cls,wv)=>`<div class="xc ${k}"><div class="xl"><span>${esc(lab)}</span><em>${en}</em></div><div class="xv num ${cls||''}"><small>RM</small><span data-count="${v}">${f2(v)}</span></div><div class="xsub">${sub}</div>${wv||''}</div>`;
+  return `<section class="card xpanel"><div class="xhd"><div><span class="xtag">PROFIT</span><h2>${esc(L.hfT)}</h2></div><span class="xmeta num">${esc(L.ordersUnits(f0(tt.orders),f0(tt.units)))}</span></div>
+    <div class="xmain"><div class="xhero">${gauge(tt.margin,tt.net2,L.marginL)}<div class="xhv"><div class="xl"><span>${esc(L.kTP)}</span><em>TRUE PROFIT</em></div><div class="xv num big ${tt.net2<0?'neg':'pos'}"><small>RM</small><span data-count="${tt.net2}">${f2(tt.net2)}</span></div>
+      ${tt.missingSkus?`<a href="#costs" class="xw">${ic('alert',11,'#F4C45A',2.4)}${esc(L.nNoCost(tt.missingSkus))}</a>`:''}${wave(D.map(d=>d.net2),'#40D99A','wv3',54)}</div></div>
+    <div class="xgrid">${cell('rev',L.kRev,'REVENUE',tt.rev,`<span class="num">100%</span>`,'',wave(D.map(d=>d.rev),'#8B9BFF','wv1'))}
+      ${cell('ded',L.kDed,'FEES',-tt.ded,`<span class="num">${pc(tt.ded/rv)}</span> ${esc(L.ofRevS)}`,'neg',wave(D.map(d=>d.rev-(d.net||0)),'#FF8F73','wv2'))}
+      ${cell('net',L.kNet,'NET BEFORE COST',tt.net,`<span class="num">${pc(tt.netMargin)}</span> ${esc(L.marginL)}`,'',wave(D.map(d=>d.net||0),'#C3CBFF','wv4'))}
+      ${cell('cogs',L.gCogsI,'COGS',-tt.cost,`<span class="num">${pc(tt.cost/rv)}</span> ${esc(L.ofRevS)}`,'warnv',wave(D.map(d=>(d.net||0)-d.net2),'#F4C45A','wv5'))}</div></div>
+    <div class="xcomp"><div class="xl" style="margin-bottom:10px"><span>${esc(L.compT)}</span><em>REVENUE SPLIT</em></div>${bar}</div>${bgWaves('rgba(154,166,255,.05)','rgba(64,217,154,.045)')}</section>`}
+function gauge2(p1,label){const r=74,C=2*Math.PI*r,a=Math.max(0,Math.min(1,p1)),ticks=Array.from({length:60},(_,i)=>{const an=i/60*2*Math.PI-Math.PI/2,r1=88,r2=i%5?92:95;return `<line x1="${(100+r1*Math.cos(an)).toFixed(1)}" y1="${(100+r1*Math.sin(an)).toFixed(1)}" x2="${(100+r2*Math.cos(an)).toFixed(1)}" y2="${(100+r2*Math.sin(an)).toFixed(1)}" class="${i/60<=a?'on':'pd'}"/>`}).join('');
+  return `<div class="xgauge g2"><svg viewBox="0 0 200 200" aria-hidden="true"><defs><linearGradient id="gg2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7CF0C5"/><stop offset="1" stop-color="#23B57C"/></linearGradient><filter id="gglow2" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+    <g class="tk">${ticks}</g><circle cx="100" cy="100" r="${r}" class="trk pend"/><circle cx="100" cy="100" r="${r}" class="arc" stroke="url(#gg2)" filter="url(#gglow2)" style="--C:${C.toFixed(1)};--o:${(C*(1-a)).toFixed(1)}" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${(C*(1-a)).toFixed(1)}" transform="rotate(-90 100 100)"/><circle cx="100" cy="100" r="58" class="inner"/></svg>
+    <div class="gc"><span class="gp num">${pc(a)}</span><span class="gl">${esc(label)}</span></div></div>`}
 function payStrip(R){const L=t(),tt=R.tot,tk=R.plat==='tiktok',rv=tt.rev||1;
-  const paidRev=tk?tt.rev-(tt.unsetRev||0):tt.rev,pendRev=tk?(tt.unsetRev||0):0,v=tk?tt.recvNet:tt.net2;
-  const bar=`<div class="pyb"><span class="p" style="width:${(paidRev/rv*100).toFixed(2)}%"></span><span class="u" style="width:${(pendRev/rv*100).toFixed(2)}%"></span></div>
-    <div class="pyl"><div><i style="background:#52E0A6"></i><span class="dim">${esc(L.pyPaidRev)}</span><b class="num">RM ${f2(paidRev)}</b><span class="num dim">${f0(tk?tt.paidOrders:tt.orders)} ${lang==='zh'?'单':'orders'} · ${pc(paidRev/rv)}</span></div>
-    ${tk&&pendRev?`<a href="#payout" data-act="pend"><i style="background:#F4C45A"></i><span class="dim">${esc(L.pyPendRev)}</span><b class="num warn">RM ${f2(pendRev)}</b><span class="num dim">${f0(tt.unsetOrders)} ${lang==='zh'?'单':'orders'} · ${pc(pendRev/rv)} ${ic('chev',12)}</span></a>`:`<div><i style="background:#52E0A6"></i><span class="dim">${esc(L.pyAllPaid)}</span></div>`}</div>`;
-  const rows=tk?[[L.rcPaid,tt.paidAmt,''],[L.rcCost,tt.setCost,'−'],[L.rcAds,tt.shopAds,'−']].concat(tt.reimb?[[L.rcReimb,tt.reimb,'+']]:[])
-    :[[L.rcRev,tt.rev,''],[L.rcFees,tt.ded,'−'],[L.rcCost,tt.cost,'−']];
-  const notes=tk?[tt.setMissing?L.rnMiss(tt.setMissing):'',pendRev?L.rnPend(f2(pendRev)):''].filter(Boolean):[L.rcAll];
-  const rc=`<div class="rcpt"><div class="rch">${ic('cash',15,'#52E0A6',2)}${esc(L.rcT)}</div>${rows.filter(r=>r[1]||!r[2]).map(([l,x,s])=>`<div class="rcr"><span>${esc(l)}</span><b class="num ${s==='−'?'neg':s==='+'?'acc':''}">${s}${f2(x)}</b></div>`).join('')}
-    <div class="rct"><span>${esc(L.rcNet)}</span><b class="num ${v<0?'neg':'pos'}"><small>RM</small><span data-count="${v}">${f2(v)}</span></b></div>
-    ${notes.map(x=>`<div class="rcn">${ic('alert',12,'#F4C45A',2.4)}${esc(x)}</div>`).join('')}</div>`;
-  return `<section class="card pystrip"><div class="pyleft"><div class="hd" style="margin-bottom:16px"><div><h2>${esc(L.pyT)}</h2><div class="sub">${esc(L.pyS)}</div></div></div>${bar}</div>${rc}</section>`}
+  const paidRev=tk?tt.rev-(tt.unsetRev||0):tt.rev,pendRev=tk?(tt.unsetRev||0):0,v=tk?tt.recvNet:tt.net2,pr=paidRev/rv;
+  const days={};R.lines.forEach(l=>{const d=l.done.slice(0,10);const o=days[d]=days[d]||{p:0,u:0};if(l.unset)o.u+=l.amt;else o.p+=l.amt});
+  const dk=Object.keys(days).sort(),sp=dk.map(d=>days[d].p),su=dk.map(d=>days[d].u);
+  const terms=tk?[[L.rnPaid,tt.paidAmt,'','#52E0A6'],[L.rnCost,tt.setCost,'−','#F4C45A'],[L.rnAds,tt.shopAds,'−','#FF5C8A']].concat(tt.reimb?[[L.rnReimb,tt.reimb,'+','#9AA6FF']]:[])
+    :[[L.rnRev,tt.rev,'','#8B9BFF'],[L.rnFees,tt.ded,'−','#FF8F73'],[L.rnCost,tt.cost,'−','#F4C45A']];
+  const base=terms[0][1]||1;let run=0;
+  const wf=terms.filter(x=>x[1]||!x[2]).map(([l,x,s,c],i)=>{const st=s==='−'?run-x:run,w=x/base*100,left=(s==='−'?run-x:run)/base*100;run=s==='−'?run-x:run+x;
+    return `<div class="xwr"><span class="xwl"><em class="op">${s||'&nbsp;'}</em>${esc(l)}</span><span class="xwt"><i style="left:${Math.max(0,left).toFixed(2)}%;width:${Math.max(.6,w).toFixed(2)}%;background:linear-gradient(90deg,${c}cc,${c})"></i></span><b class="num">${s}${f2(x)}</b></div>`}).join('')+
+    `<div class="xwr tot"><span class="xwl"><em class="op">=</em>${esc(L.rcNet)}</span><span class="xwt"><i style="left:0;width:${Math.max(.6,Math.max(v,0)/base*100).toFixed(2)}%;background:linear-gradient(90deg,#23B57C,#7CF0C5);box-shadow:0 0 12px rgba(64,217,154,.6)"></i></span><b class="num pos">${f2(v)}</b></div>`;
+  const notes=tk?[tt.setMissing?L.rnMiss(tt.setMissing):''].filter(Boolean):[L.rcAll];
+  const cell=(k,lab,en,val,sub,cls,wv)=>`<div class="xc ${k}"><div class="xl"><span>${lab}</span><em>${en}</em></div><div class="xv num ${cls}"><small>RM</small><span data-count="${val}">${f2(val)}</span></div><div class="xsub">${sub}</div>${wv}</div>`;
+  const ord=lang==='zh'?'单':'orders';
+  return `<section class="card xpanel xpay"><div class="xhd"><div><span class="xtag">CASH</span><h2>${esc(L.pyT)}</h2></div>${tk&&pendRev?`<a href="#payout" data-act="pend" class="xlink">${esc(L.payT)} ${ic('chev',12)}</a>`:`<span class="xmeta num">${esc(L.pyAllPaid)}</span>`}</div>
+    <div class="xmain"><div class="xhero">${gauge2(pr,L.paidRate)}<div class="xhv"><div class="xl"><span>${esc(L.rcNet)}</span><em>NET IN HAND</em></div><div class="xv num big ${v<0?'neg':'pos'}"><small>RM</small><span data-count="${v}">${f2(v)}</span></div>
+      <div class="xsub" style="margin-top:4px">${esc(L.rnS2)}</div>${notes.map(x=>`<div class="xw" style="margin-top:6px">${ic('alert',11,'#F4C45A',2.4)}${esc(x)}</div>`).join('')}${wave(sp,'#40D99A','wv6',50)}</div></div>
+    <div class="xgrid">${cell('pd',`<i class="sd" style="background:#52E0A6;color:#52E0A6"></i>${esc(L.paidT)}`,'SETTLED',paidRev,`<span class="num">${f0(tk?tt.paidOrders:tt.orders)}</span> ${ord} · <span class="num">${pc(pr)}</span>`,'pos',wave(sp,'#52E0A6','wv7'))}
+      ${cell('pn',`<i class="sd" style="background:#F4C45A;color:#F4C45A"></i>${esc(L.pendT2)}`,'PENDING',pendRev,tk?`<span class="num">${f0(tt.unsetOrders)}</span> ${ord} · <span class="num">${pc(1-pr)}</span>`:esc(L.pyAllPaid),pendRev?'warnv':'dimv',pendRev?wave(su,'#F4C45A','wv8'):'<div class="xflat"></div>')}
+      <div class="xc xwf"><div class="xl"><span>${esc(L.wfT)}</span><em>BREAKDOWN</em></div><div class="xwb">${wf}</div></div></div></div>
+    <div class="xcomp"><div class="xl" style="margin-bottom:10px"><span>${esc(L.pyProg)}</span><em>SETTLEMENT</em></div>
+      <div class="xbar"><span class="xs xtp" style="flex:${pr.toFixed(5)};background:linear-gradient(180deg,#7CF0C5,#23B57C)"></span>${pendRev?`<span class="xs pend" style="flex:${(1-pr).toFixed(5)}"></span>`:''}</div>
+      <div class="xleg"><span><i style="background:#52E0A6"></i>${esc(L.paidT)}<b class="num">RM ${f2(paidRev)}</b></span><span><i style="background:#F4C45A"></i>${esc(L.pendT2)}<b class="num">RM ${f2(pendRev)}</b></span></div></div>
+    ${bgWaves('rgba(64,217,154,.05)','rgba(47,176,255,.04)')}</section>`}
+
+Object.assign(X.zh,{ofRevS:'占营业额'});Object.assign(X.en,{ofRevS:'of revenue'});
+
+Object.assign(X.zh,{compT:'每 RM 100 营业额的去向'});Object.assign(X.en,{compT:'Where every RM 100 of revenue goes'});
+
+Object.assign(X.zh,{paidRate:'已到账比例',rnS2:'已到账的钱，扣掉这些订单的成本后真正落袋',wfT:'净赚怎么算',pyProg:'订单金额到账进度'});Object.assign(X.en,{paidRate:'received',rnS2:'Money already paid out, after the cost of those orders',wfT:'How net earned adds up',pyProg:'Settlement progress of order value'});
 
 /* ---------- styled Excel exports (xlsx-js-style) ---------- */
 Object.assign(X.zh,{expOk:'营销报告已导出',xT:'Lumen 真利 · 营销报告',xPer:'期间',xGen:'生成于',xKRev:'营业额',xKNet:'真实净利',xKMg:'利润率',xKOrd:'订单',xKUnits:'销量',
